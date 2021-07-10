@@ -185,6 +185,8 @@ void emma_REMLE(Eigen::ArrayXd& y, Eigen::MatrixXd& x, Eigen::MatrixXd& K, Eigen
 
 int count_matrix_col(std::ifstream& matrix);
 int count_matrix_row(std::ifstream& matrix);
+int count_string_col(std::string str);
+
 void emma_eigen_L_wo_Z(Eigen::MatrixXd& Kinship, Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd>& eig_L);
 void emma_eigen_R_wo_Z(Eigen::MatrixXd& Kinship, Eigen::MatrixXd& X, Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd>& eig_R, int indi);
 double emma_delta_REML_dLL_wo_Z(double logdelta, Eigen::Map<Eigen::ArrayXd>& eig_value, Eigen::Map<Eigen::ArrayXd>& etas, Eigen::ArrayXd& etasq);
@@ -215,6 +217,7 @@ int makeRandomInteger(int number);
 
 Eigen::MatrixXd read_mat(std::ifstream& input_file, int row, int col);
 Eigen::MatrixXd read_mat(std::string X, int col);
+Eigen::MatrixXd read_mat(std::vector<std::pair<std::string, double>> X, int row, int start_number = 0);
 Eigen::MatrixXd cov(Eigen::MatrixXd& mat);
 Eigen::MatrixXd normMe(Eigen::MatrixXd& mat);
 Eigen::MatrixXd cbind(Eigen::MatrixXd& a, Eigen::MatrixXd& b);
@@ -228,3 +231,4 @@ Eigen::MatrixXd estimateKinship(Eigen::MatrixXd snp);
 void estimateVarComp(Eigen::MatrixXd& kinship, Eigen::MatrixXd& snp, Eigen::MatrixXd& phenotype, std::vector<double>& vc_1, std::vector<double>& vc_2);
 void rotate_X_SigmaM(Eigen::MatrixXd& kinship, Eigen::MatrixXd& snp, double Vg, double Ve);
 void cal_SigmaM(Eigen::MatrixXd& kinship, double Vg, double Ve);
+Eigen::MatrixXd cal_cor(Eigen::MatrixXd& mat);

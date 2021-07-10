@@ -664,7 +664,6 @@ double** read_mat_darray(std::ifstream& input_file, int row, int col) {
     return ret_mat;
 }
 
-
 Eigen::MatrixXd read_mat(std::string X, int col) {
 
     std::string token;
@@ -677,6 +676,30 @@ Eigen::MatrixXd read_mat(std::string X, int col) {
     }
     stream.clear();  //for coursor reset
 
+    return ret_mat;
+}
+
+Eigen::MatrixXd read_mat(std::vector<std::pair<std::string, double>> X, int row, int start_number) {
+    //start_number default = 0, but if using MARS, start_number is 1
+
+    std::string read_buffer;
+    std::string token;
+    std::stringstream stream;
+
+    int col = count_string_col(X[0].first) - start_number;
+    std::cout << "col = " << col << std::endl;
+    Eigen::MatrixXd ret_mat = Eigen::MatrixXd(row, col);
+    for (int i = 0; i < row; i++) { //row
+        stream.str(X[i].first);
+        for (int j = 0; j < start_number; j++) {
+            stream >> token;
+        }
+        for (int j = 0; j < col; j++) { //col
+            stream >> token;
+            ret_mat(i, j) = std::stold(token);
+        }
+        stream.clear();  //for coursor reset
+    }
     return ret_mat;
 }
 
@@ -704,6 +727,17 @@ int count_matrix_row(std::ifstream& matrix) {
     }
     matrix.clear();//coursor reset
     matrix.seekg(0, std::ios_base::beg);
+    return count;
+}
+
+int count_string_col(std::string str) {
+    std::string token;
+    std::stringstream stream; int count = 0;
+
+    stream.str(str);
+    while (stream >> token) {
+        count++;
+    }
     return count;
 }
 
@@ -1514,5 +1548,20 @@ std::vector<std::string> Gamma_cpp(Eigen::MatrixXd& Kx, Eigen::MatrixXd& Ky, int
         std::cout <<"z is " << z << " " << F_Mod << " " << p_val << std::endl;
         ret.push_back(std::to_string(F_Mod) + " " + std::to_string(p_val));
     }
+    return ret;
+}
+
+Eigen::MatrixXd cal_cor(Eigen::MatrixXd& mat) {
+    int mat_cols = mat.cols();
+    int mat_rows = mat.rows();
+    
+    Eigen::MatrixXd centered = mat.colwise() - mat.rowwise().mean(); //cov랑 틀림 주의할것!. 넣는 순서가 다름.
+    Eigen::MatrixXd ret(mat_rows, mat_rows);
+    for (int i = 0; i < mat_rows; i++) {
+        for (int j = 0; j < mat_rows; j++) {
+            ret(i, j) = (centered.row(i) * centered.row(j).transpose()).sum() / (std::sqrt((centered.row(i) * centered.row(i).transpose()).sum()) * std::sqrt((centered.row(j) * centered.row(j).transpose()).sum()));
+        }
+    }
+    
     return ret;
 }
