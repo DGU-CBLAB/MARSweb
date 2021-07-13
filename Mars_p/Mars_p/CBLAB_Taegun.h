@@ -37,6 +37,9 @@
 #include <boost/math/special_functions/erf.hpp>
 #include <boost/math/distributions/inverse_gaussian.hpp>
 #include <boost/math/special_functions/beta.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/normal_distribution.hpp>    
+
 
 #define MAXNSEC 1000 // maximum number of sections for scaling factor
 #define EIGEN_EPS 1E-10 // epsilon to add to the matrix diagonal
