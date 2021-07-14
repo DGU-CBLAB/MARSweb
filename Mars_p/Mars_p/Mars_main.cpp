@@ -2,6 +2,8 @@
 #include "CBLAB_Taegun.h"
 
 bool cmp(std::pair<std::string, double> left, std::pair<std::string, double> right);
+double dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat);
+Eigen::MatrixXd rmvnorm_(int simulation_Number, Eigen::VectorXd mean, Eigen::MatrixXd covar);
 
 namespace Eigen {
 	namespace internal {
@@ -71,19 +73,34 @@ int main() {
 	//ldout.close();
 	//read_matout.close();
 
+	Eigen::VectorXd x(3);
+	Eigen::VectorXd mean(3);
+	Eigen::MatrixXd covar(3, 3);
 
-	int size = 2; // Dimensionality (rows)
-	int nn = 5;     // How many samples (columns) to draw
+	x << -0.00179894686119737, -0.730542222975183, -0.0578767789433488;
+	mean << 0, 0, 0;
+	covar << 1, 0, 0,
+		0, 1, 0,
+		0, 0, 1;
+
+	std::cout << std::log(dmvnorm_(x, mean, covar)) << std::endl;
+	return 0;
+
+}
+
+
+bool cmp(std::pair<std::string, double> left, std::pair<std::string, double> right) {
+	return std::abs(left.second) > std::abs(right.second);
+}
+
+Eigen::MatrixXd rmvnorm_(int simulation_Number, Eigen::VectorXd mean, Eigen::MatrixXd covar) {
+
+	int size = mean.size(); // Dimensionality (rows)
+	int nn = simulation_Number;     // How many samples (columns) to draw
 	Eigen::internal::scalar_normal_dist_op<double> randN; // Gaussian functor
 	Eigen::internal::scalar_normal_dist_op<double>::rng.seed(1); // Seed the rng
 
 	// Define mean and covariance of the distribution
-	Eigen::VectorXd mean(size);
-	Eigen::MatrixXd covar(size, size);
-
-	mean << 0, 0;
-	covar << 1, 0,
-		0, 1;
 
 	Eigen::MatrixXd normTransform(size, size);
 
@@ -108,16 +125,19 @@ int main() {
 		* Eigen::MatrixXd::NullaryExpr(size, nn, randN)).colwise()
 		+ mean;
 
-	std::cout << "Mean\n" << mean << std::endl;
-	std::cout << "Covar\n" << covar << std::endl;
-	std::cout << "Samples\n" << samples << std::endl;
 
-	return 0;
-
+	return samples;
 }
 
-
-bool cmp(std::pair<std::string, double> left, std::pair<std::string, double> right) {
-	return std::abs(left.second) > std::abs(right.second);
+double dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat) //한개씩 계산댐.
+{
+	// avoid magic numbers in your code. Compilers will be able to compute this at compile time:
+	const double logSqrt2Pi = 0.5 * std::log(2 * M_PI);
+	typedef Eigen::LLT<Eigen::MatrixXd> Chol;
+	Chol chol(covMat);
+	// Handle non positive definite covariance somehow:
+	if (chol.info() != Eigen::Success) throw "decomposition failed!";
+	const Chol::Traits::MatrixL& L = chol.matrixL();
+	double quadform = (L.solve(x - meanVec)).squaredNorm();
+	return std::exp(-x.rows() * logSqrt2Pi - 0.5 * quadform) / L.determinant();
 }
-
