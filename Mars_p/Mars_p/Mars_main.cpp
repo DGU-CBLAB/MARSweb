@@ -1,9 +1,11 @@
 #include <iostream>
 #include "CBLAB_Taegun.h"
 
-bool cmp(std::pair<std::string, double> left, std::pair<std::string, double> right);
+bool cmp_str_double(std::pair<std::string, double> left, std::pair<std::string, double> right);
+bool cmp_int_double(std::pair<int, double> left, std::pair<int, double> right);
 double dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat);
 Eigen::MatrixXd rmvnorm_(int simulation_Number, Eigen::VectorXd mean, Eigen::MatrixXd covar);
+std::vector<std::vector<std::pair<int, double>>> basic_sampling(int simNum, int topNum, Eigen::MatrixXd Geno);
 
 namespace Eigen {
 	namespace internal {
@@ -36,69 +38,67 @@ namespace Eigen {
 
 int main() {
 
-	//int select_num = 50;
+	int select_num = 50;
 
-	//std::ifstream geno("ENSG00000173862.3_GENO");
-	//std::ifstream stat("ENSG00000173862.3_STAT");
-	//std::ofstream ldout("cppld50.txt");
-	//std::ofstream read_matout("read_matGS.txt");
+	std::ifstream geno("ENSG00000173862.3_GENO");
+	std::ifstream stat("ENSG00000173862.3_STAT");
+	std::ofstream ldout("cppld50.txt");
+	std::ofstream read_matout("read_matGS.txt");
 
-	//std::vector<std::pair<std::string, double>> GS;
-	//std::map<int, double>::iterator iter;
+	std::vector<std::pair<std::string, double>> GS;
 
-	//double stemp = 0.0;
-	//std::string gtemp = "";
-	//
-	//while (stat >> stemp) {
-	//	getline(geno, gtemp);
-	//	GS.push_back(std::pair<std::string, double>(gtemp, stemp));
-	//}
+	double stemp = 0.0;
+	std::string gtemp = "";
+	
+	while (stat >> stemp) {
+		getline(geno, gtemp);
+		GS.push_back(std::pair<std::string, double>(gtemp, stemp));
+	}
 
-	//std::sort(GS.begin(), GS.end(), cmp);
+	std::sort(GS.begin(), GS.end(), cmp_str_double);
 
-	//geno.close();
-	//stat.close();
+	geno.close();
+	stat.close();
 
-	//Eigen::MatrixXd read_GS = read_mat(GS, 50, 1);
-	//Eigen::MatrixXd cal_LD = cal_cor(read_GS);
-	//
-	//ldout << cal_LD << std::endl;
+	Eigen::MatrixXd read_GS = read_mat(GS, 50, 1);
+	Eigen::MatrixXd read_GS_all = read_mat(GS, GS.size(), 1);
 
-	//SelfAdjointEigenSolver<MatrixXd> solver(0.5 * (cal_LD + cal_LD.transpose()));
-	//std::cout << "??" << std::endl;
-	//MatrixXd Z = solver.eigenvectors() * solver.eigenvalues().cwiseMax(0).asDiagonal() * solver.eigenvectors().transpose();
+	Eigen::MatrixXd cal_LD = cal_cor(read_GS);
+	
+	ldout << cal_LD << std::endl;
+
+	SelfAdjointEigenSolver<MatrixXd> solver(0.5 * (cal_LD + cal_LD.transpose()));
+	MatrixXd Z = solver.eigenvectors() * solver.eigenvalues().cwiseMax(0).asDiagonal() * solver.eigenvectors().transpose();
 
 	//std::cout << Z << std::endl;
 	
-	//ldout.close();
-	//read_matout.close();
+	ldout.close();
+	read_matout.close();
 
-	Eigen::VectorXd x(3);
-	Eigen::VectorXd mean(3);
-	Eigen::MatrixXd covar(3, 3);
+	std::vector<std::vector<std::pair<int, double>>> BS = basic_sampling(1000, 50, read_GS_all);
 
-	x << -0.00179894686119737, -0.730542222975183, -0.0578767789433488;
-	mean << 0, 0, 0;
-	covar << 1, 0, 0,
-		0, 1, 0,
-		0, 0, 1;
-
-	std::cout << std::log(dmvnorm_(x, mean, covar)) << std::endl;
+	for (int i = 0; i < BS[0].size(); i++) {
+		std::cout << BS[0][i].first << " " << BS[0][i].second << std::endl;
+	}
 	return 0;
 
 }
 
 
-bool cmp(std::pair<std::string, double> left, std::pair<std::string, double> right) {
+bool cmp_str_double(std::pair<std::string, double> left, std::pair<std::string, double> right) {
 	return std::abs(left.second) > std::abs(right.second);
 }
-
+bool cmp_int_double(std::pair<int, double> left, std::pair<int, double> right) {
+	return std::abs(left.second) > std::abs(right.second);
+}
 Eigen::MatrixXd rmvnorm_(int simulation_Number, Eigen::VectorXd mean, Eigen::MatrixXd covar) {
 
 	int size = mean.size(); // Dimensionality (rows)
 	int nn = simulation_Number;     // How many samples (columns) to draw
+
+	std::random_device rd_rng;
 	Eigen::internal::scalar_normal_dist_op<double> randN; // Gaussian functor
-	Eigen::internal::scalar_normal_dist_op<double>::rng.seed(1); // Seed the rng
+	Eigen::internal::scalar_normal_dist_op<double>::rng.seed(rd_rng()); // Seed the rng
 
 	// Define mean and covariance of the distribution
 
@@ -140,4 +140,32 @@ double dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const 
 	const Chol::Traits::MatrixL& L = chol.matrixL();
 	double quadform = (L.solve(x - meanVec)).squaredNorm();
 	return std::exp(-x.rows() * logSqrt2Pi - 0.5 * quadform) / L.determinant();
+}
+
+std::vector<std::vector<std::pair<int, double>>> basic_sampling(int simNum, int topNum, Eigen::MatrixXd Geno) { // Geno row x col row is indi, col is snp count
+	int Geno_cols = Geno.cols();
+	int Geno_rows = Geno.rows();
+
+	std::cout << "step1" << std::endl;
+	Eigen::MatrixXd xs_scale = Geno.colwise() - Geno.rowwise().mean();
+	Eigen::VectorXd null_mean(Geno_cols); null_mean.setZero();
+	Eigen::MatrixXd null_covar(Geno_cols, Geno_cols); null_covar.setIdentity();
+
+	std::cout << "step2" << std::endl;
+	Eigen::MatrixXd Sall = rmvnorm_(simNum, null_mean, null_covar); // Geno_cols x simNum
+	Eigen::MatrixXd Sall_new = (xs_scale / std::sqrt(Geno_cols)) * Sall;
+
+	std::cout << "step3" << std::endl;
+	std::vector< std::vector<std::pair<int, double>>> BS;
+	for (int i = 0; i < Geno_rows; i++) {
+		std::cout << "i =" << i << std::endl;
+		std::vector<std::pair<int, double>> BS_element;
+		for (int j = 0; j < simNum; j++) {
+			BS_element.push_back(std::pair<int, double>(j, Sall_new(i, j)));
+		}
+		std::sort(BS_element.begin(), BS_element.end(), cmp_int_double);
+		BS_element.resize(topNum); BS.push_back(BS_element);
+	}
+
+	return BS;
 }
