@@ -6,6 +6,7 @@ bool cmp_int_double(std::pair<int, double> left, std::pair<int, double> right);
 double dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat);
 Eigen::MatrixXd rmvnorm_(int simulation_Number, Eigen::VectorXd mean, Eigen::MatrixXd covar);
 std::vector<std::vector<std::pair<int, double>>> basic_sampling(int simNum, int topNum, Eigen::MatrixXd Geno);
+std::vector<std::pair<double, std::vector<std::pair<int, double>>>> importance_sampling(int simNum, int topNum, Eigen::MatrixXd Geno);
 
 namespace Eigen {
 	namespace internal {
@@ -43,8 +44,8 @@ int main() {
 	std::ifstream geno("ENSG00000173862.3_GENO");
 	std::ifstream stat("ENSG00000173862.3_STAT");
 	std::ofstream ldout("cppld50.txt");
-	std::ofstream read_matout("read_matGS.txt");
-
+	std::ofstream BS_out("BS_cpp.txt");
+	std::ofstream WBS_out("WBS_cpp.txt");
 	std::vector<std::pair<std::string, double>> GS;
 
 	double stemp = 0.0;
@@ -73,13 +74,31 @@ int main() {
 	//std::cout << Z << std::endl;
 	
 	ldout.close();
-	read_matout.close();
 
 	std::vector<std::vector<std::pair<int, double>>> BS = basic_sampling(1000, 50, read_GS_all);
-
-	for (int i = 0; i < BS[0].size(); i++) {
-		std::cout << BS[0][i].first << " " << BS[0][i].second << std::endl;
+	std::vector<std::pair<double, std::vector<std::pair<int, double>>>> WBS = importance_sampling(1000, 50, read_GS_all);
+	
+	for (int i = 0; i < BS.size(); i++) {
+		for (int j = 0; j < BS[0].size(); j++) {
+			BS_out << BS[i][j].first << " " << BS[i][j].second << " ";
+		}
+		BS_out << "\n";
 	}
+
+	for (int i = 0; i < WBS.size(); i++) {
+		WBS_out << WBS[i].first;
+		for (int j = 0; j < WBS[0].second.size(); j++) {
+			WBS_out << WBS[i].second[j].first << " " << WBS[i].second[j].second << " ";
+		}
+		WBS_out << "\n";
+	}
+
+	BS_out.close();
+	WBS_out.close();
+
+	std::cout << "¿Ï·á" << std::endl;
+
+
 	return 0;
 
 }
@@ -146,26 +165,75 @@ std::vector<std::vector<std::pair<int, double>>> basic_sampling(int simNum, int 
 	int Geno_cols = Geno.cols();
 	int Geno_rows = Geno.rows();
 
-	std::cout << "step1" << std::endl;
 	Eigen::MatrixXd xs_scale = Geno.colwise() - Geno.rowwise().mean();
+	for (int i = 0; i < Geno_rows; i++) {
+		xs_scale.row(i) = xs_scale.row(i) / std::sqrt((Geno.row(i).array() - Geno.row(i).mean()).square().sum() / (Geno_cols - 1));
+	}
+
 	Eigen::VectorXd null_mean(Geno_cols); null_mean.setZero();
 	Eigen::MatrixXd null_covar(Geno_cols, Geno_cols); null_covar.setIdentity();
 
-	std::cout << "step2" << std::endl;
 	Eigen::MatrixXd Sall = rmvnorm_(simNum, null_mean, null_covar); // Geno_cols x simNum
+	std::ofstream Sall_out("basic_Sal.txt");
+	Sall_out << Sall << std::endl;
 	Eigen::MatrixXd Sall_new = (xs_scale / std::sqrt(Geno_cols)) * Sall;
 
-	std::cout << "step3" << std::endl;
 	std::vector< std::vector<std::pair<int, double>>> BS;
-	for (int i = 0; i < Geno_rows; i++) {
-		std::cout << "i =" << i << std::endl;
+	for (int i = 0; i < simNum; i++) {
 		std::vector<std::pair<int, double>> BS_element;
-		for (int j = 0; j < simNum; j++) {
-			BS_element.push_back(std::pair<int, double>(j, Sall_new(i, j)));
+		for (int j = 0; j < Geno_rows; j++) {
+			BS_element.push_back(std::pair<int, double>(j, Sall_new(j, i)));
 		}
 		std::sort(BS_element.begin(), BS_element.end(), cmp_int_double);
 		BS_element.resize(topNum); BS.push_back(BS_element);
 	}
-
+	Sall_out.close();
 	return BS;
+}
+
+std::vector<std::pair<double, std::vector<std::pair<int, double>>>> importance_sampling(int simNum, int topNum, Eigen::MatrixXd Geno) { // Geno row x col row is indi, col is snp count
+	int Geno_cols = Geno.cols();
+	int Geno_rows = Geno.rows();
+	
+	Eigen::MatrixXd xs_scale = Geno.colwise() - Geno.rowwise().mean();
+	for (int i = 0; i < Geno_rows; i++) {
+		xs_scale.row(i) = xs_scale.row(i)/std::sqrt((Geno.row(i).array() - Geno.row(i).mean()).square().sum() / (Geno_cols - 1));
+	}
+
+
+	std::ofstream Xs_out("xs_cpp.txt");
+	Xs_out << xs_scale << std::endl;
+	Xs_out.close();
+	
+	Eigen::VectorXd null_mean(Geno_cols); null_mean.setZero();
+	Eigen::MatrixXd null_covar(Geno_cols, Geno_cols); null_covar.setIdentity(); 
+	Eigen::MatrixXd Sall = rmvnorm_(simNum, null_mean, null_covar*std::sqrt(2)); // Geno_cols x simNum, *std::sqrt(2) for importance sampling
+
+	std::ofstream Sall_out("importance_Sal.txt");
+	Sall_out << Sall << std::endl;
+	Sall_out.close();
+
+	Eigen::MatrixXd Sall_new = (xs_scale / std::sqrt(Geno_cols)) * Sall; // Geno_rows x simNum
+
+
+
+	std::vector<std::pair<double, std::vector<std::pair<int, double>>>> WBS;
+	double Weight = 0.0f;
+	for (int i = 0; i < simNum; i++) { //calculate Weight
+		std::log(dmvnorm_(Sall.col(i), null_mean, null_covar) / dmvnorm_(Sall.col(i), null_mean, null_covar * std::sqrt(2)));
+	}
+
+	for (int i = 0; i < simNum; i++) { //calculate t(apply(Sall_new, 2, top50, fR=R, topNum=topNum)) in Mars
+		std::vector<std::pair<int, double>> BS_element;
+		for (int j = 0; j < Geno_rows; j++) {
+			BS_element.push_back(std::pair<int, double>(j, Sall_new(j, i)));
+		}
+		std::sort(BS_element.begin(), BS_element.end(), cmp_int_double);
+		BS_element.resize(topNum);
+		Weight = std::log(dmvnorm_(Sall.col(i), null_mean, null_covar) / dmvnorm_(Sall.col(i), null_mean, null_covar * std::sqrt(2)));
+		WBS.push_back(std::pair<double, std::vector<std::pair<int, double>>>(Weight, BS_element));
+	}
+
+
+	return WBS;
 }

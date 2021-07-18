@@ -18,7 +18,8 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include <map>
+#include <map> 
+#include <tuple> // 3pair data
 
 
 #define _FILE_OFFSET_BITS  64 // large file support
