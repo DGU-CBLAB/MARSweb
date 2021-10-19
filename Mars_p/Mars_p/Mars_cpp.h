@@ -57,6 +57,8 @@ private:
 	int maxCausalSNP;
 	int snpCount;
 	int simNum;
+	int LRT_count;
+	int pvalue_count;
 
 	double* postValues;
 	double* histValues;
@@ -66,10 +68,10 @@ private:
 	double pvalue;
 	double NCP;
 	double gamma;
+	double alt_LRTscore;
+	double alt_pvalue;
 
 	std::vector<std::pair<std::string, double>> GS;
-	std::vector<std::vector<std::pair<int, double>>> BS;
-	std::vector<std::pair<double, std::vector<std::pair<int, double>>>> WBS;
 
 	Eigen::MatrixXd sigmaMatrix;
 	Eigen::MatrixXd Geno_LD;
@@ -77,8 +79,12 @@ private:
 	Eigen::MatrixXd Geno_all;
 
 public:
-	
-	Mars_cpp(std::string Geno, std::string Stat);
+
+	std::vector<std::vector<std::pair<int, double>>> BS;
+	std::vector<std::pair<double, std::vector<std::pair<int, double>>>> WBS;
+
+
+	Mars_cpp(std::string Geno, std::string Stat, int simNum_, double NCP_, double gamma_, int subsize,int maxCausal_SNP,int mode, double UNI_threshold);
 
 	int nextBinary(int* data, int size);
 	int count_string_col(std::string str);
