@@ -3,27 +3,94 @@
 //std::vector<std::vector<std::pair<int, double>>> BS;
 //std::vector<std::pair<double, std::vector<std::pair<int, double>>>> WBS;
 
-int main() {
+bool isNumber(const std::string& str);
 
-	/*
-	std::string Geno, std::string Stat, int simNum_, double NCP_, double gamma_, int sub_size, int maxCausal_SNP, int mode, double UNI_threshold
-	*/
-	Mars_cpp M("ENSG00000173862.3_GENO", "ENSG00000173862.3_STAT",10000, 5.7, 0.01, 50, 2, 1, 5e-06);
+int main(int argc, char* argv[]) { // interface 제작
 
-	//for (int i = 0; i < M.BS.size(); i++) {
-	//	bs << "0 ";
-	//	for (int j = 0; j < M.BS[i].size(); j++) {
-	//		bs << M.BS[i][j].second << " " << M.BS[i][j].first << " ";
-	//	}
-	//	bs << "\n";
-	//}
+	std::string geno_path = "";
+	std::string stat_path = "";
+	
+	// default value
+	int simNum = 10000;
+	int sub_size = 50;
+	int maxCausal_SNP = 2;
+	int mode = 1; //1 is basic sampling, 2 is importance sampling
 
+	double NCP = 5.7;
+	double gamma = 0.01;
+	double UNI_threshold = 5e-06;
 
+	for (int i = 1; i < argc; i++)
+	{
+		if (argv[i] == "-geno") {
+			try {
+				geno_path = argv[++i];
+			}
+			catch (...) {
+				std::cout << "check your genotype data file path\n";
+				return 0;
+			}
+		}
+		else if (argv[i] == "-stat") {
+			try {
+				stat_path = argv[++i];
+			}
+			catch (...) {
+				std::cout << "check your statistic data file path\n";
+				return 0;
+			}
+		}
+		else if (argv[i] == "-sim") { 
+			try {
+				std::string temp  = argv[++i];
+				if (!isNumber(temp)) { throw temp;}
+				simNum = std::stoi(temp);
+			}catch (...) {
+				std::cout << "check your parameter simulation count\n";
+				return 0;
+			}
+		}
+		else if (argv[i] == "-size") {
+			try {
+				std::string temp = argv[++i];
+				if (!isNumber(temp)) { throw temp; }
+				sub_size = std::stoi(temp);
+			}catch (...) {
+				std::cout << "check your parameter sub size\n";
+				return 0;
+			}
+		}
+		else if (argv[i] == "-mode") {
+			try {
+				mode = std::stoi(argv[++i]);
+				if (!(mode == 1 || mode == 2)) { throw mode; }
+			}
+			catch (...) {
+				std::cout << "select sampling mode 1 or 2";
+				return 0;
+			}
+		}
+	}
 
-	std::cout << "완료" << std::endl;
+	std::cout << "parameters check\n";
+	std::cout << "geno path:" << geno_path << "\n";
+	std::cout << "stat path:" << stat_path << "\n";
+	std::cout << "mode number:" << mode << "\n";
+	std::cout << "simulation count:" << simNum << "\n";
+	std::cout << "max Casual snp count:" << maxCausal_SNP << "\n";
 
+	Mars_cpp M(geno_path, stat_path,simNum, NCP, gamma, sub_size, maxCausal_SNP, mode, UNI_threshold);
+
+	std::cout << "Analysis done" << std::endl;
 
 	return 0;
-
 }
 
+
+bool isNumber(const std::string& str)
+{
+	for (char const& c : str) {
+		if (std::isdigit(c) == 0) return false;
+	}
+	return true;
+}

@@ -8,7 +8,6 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat,int simNum_, double NCP_, 
 	gamma = gamma_;
 
 	read_input_file(Geno, Stat); // Geno and Stat into GS var 
-
 	snpCount = GS.size();
 
 	stat = new double[snpCount];
@@ -20,30 +19,10 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat,int simNum_, double NCP_, 
 	Geno_part = read_mat(GS, subsize, 1);
 	Geno_all = read_mat(GS, snpCount, 1);
 	sigmaMatrix = cal_cor(Geno_part);
-
+	
 	std::cout << "Data preprocessing complete\n";
 	Geno_LD = generateLD(Geno_part);
 	std::cout << "LD calculation complete\n";
-
-	//std::ifstream bs("cpp_null_sample.txt");
-
-	BS = basic_sampling(simNum, subsize, Geno_all);
-	WBS = importance_sampling(simNum, subsize, Geno_all);
-	//std::string token;
-	//std::stringstream stream;
-	//std::string str; 
-	//for (int i = 0; i < 10000; i++) {
-	//	getline(bs, str);
-	//	stream.str(str);
-	//	stream >> token;
-	//	for (int j = 0; j < 50; j++) {
-	//		stream >> token;
-	//		BS[i][j].second = std::stod(token); 
-	//		stream >> token;
-	//		BS[i][j].first = std::stoi(token);
-	//	}
-	//}
-	//bs.close();
 
 	//alt
 	alt_pvalue = computePvalue(GS[0].second);
@@ -54,7 +33,7 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat,int simNum_, double NCP_, 
 	pvalue_count = 0; LRT_count = 0;
 
 	if (mode == 0) {
-
+		BS = basic_sampling(simNum, subsize, Geno_all);
 		for (int i = 0; i < simNum; i++) { //simNum
 			Eigen::MatrixXd BS_Geno(subsize, Geno_all.cols());
 			for (int j = 0; j < subsize; j++) {
@@ -74,6 +53,7 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat,int simNum_, double NCP_, 
 		std::cout << "pvalue_UNI = " << (double)pvalue_count/simNum << std::endl;
 	}
 	else if (mode == 1) {
+		WBS = importance_sampling(simNum, subsize, Geno_all);
 		double wsum_1 = 0.0;   //for pvalue threshold
 		double wsum_2 = 0.0;   //for UNI pvalue
 		double wsum_3 = 0.0;   //for UNI LRT value
@@ -88,6 +68,8 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat,int simNum_, double NCP_, 
 			makeSigmaPositiveSemiDefinite(sigmaMatrix);
 			double nullUNI_pvalue = computePvalue(stat[0]);
 			//std::cout << "Importance Sampling pvalue is " << computePvalue(stat[0]) << std::endl;
+			//std::cout << WBS[i].first << std::endl;;
+
 			if (nullUNI_pvalue < UNI_threshold) { wsum_1 += WBS[i].first; }
 			if (nullUNI_pvalue < alt_pvalue) { wsum_2 += WBS[i].first; }
 			computeLRT(stat);
@@ -95,9 +77,10 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat,int simNum_, double NCP_, 
 			if (LRTscore > alt_LRTscore) { wsum_3 += WBS[i].first; }
 			sum += WBS[i].first;
 		}
-		std::cout << "LRT_pvalue = " << wsum_3 / sum << "\n";
-		std::cout << "UNI_pvalue = " << wsum_2 / sum << "\n";
-		std::cout << "UNI_threshold = " << wsum_1 / sum << "\n";
+		std::cout << sum << " " << wsum_1 << " " << wsum_2 << " " << wsum_3 << "\n";
+		std::cout << "LRT_pvalue = " << wsum_3 << "/" <<  sum << "\n";
+		std::cout << "UNI_pvalue = " << wsum_2 << "/" << sum << "\n";
+		std::cout << "UNI_threshold = " << wsum_1 << "/" << sum << "\n";
 
 	}
 	else {
@@ -106,7 +89,7 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat,int simNum_, double NCP_, 
 	}
 };
 
-int Mars_cpp::nextBinary(int* data, int size) { //이거 실제로 출력해보기
+int Mars_cpp::nextBinary(int* data, int size) { // 경우의수 출력하는 함수인듯.
 	int i = 0;
 	int total_one = 0;
 	int index = size - 1;
@@ -274,11 +257,21 @@ double Mars_cpp::dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanV
 	const double logSqrt2Pi = 0.5 * std::log(2 * M_PI);
 	typedef Eigen::LLT<Eigen::MatrixXd> Chol;
 	Chol chol(covMat);
+
 	// Handle non positive definite covariance somehow:
 	if (chol.info() != Eigen::Success) throw "decomposition failed!";
 	const Chol::Traits::MatrixL& L = chol.matrixL();
 	double quadform = (L.solve(x - meanVec)).squaredNorm();
 	return std::exp(-x.rows() * logSqrt2Pi - 0.5 * quadform) / L.determinant();
+}
+
+double Mars_cpp::dmvnorm_2(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat) //한개씩 계산댐.
+{
+	double n = x.rows();
+	double sqrtsqrt2 = std::sqrt(std::sqrt(2));
+	double quadform = (x - meanVec).transpose() * covMat.inverse() * (x - meanVec);
+	//std::cout << sqrtsqrt2 * std::exp((-0.5 * quadform * (1 - 1 / std::sqrt(2))))  << std::endl;
+	return sqrtsqrt2 * std::exp((-0.5 * quadform * (1 - 1 / std::sqrt(2))));
 }
 
 Eigen::MatrixXd Mars_cpp::rmvnorm_(int simulation_Number, Eigen::VectorXd mean, Eigen::MatrixXd covar) {
@@ -469,22 +462,11 @@ std::vector<std::pair<double, std::vector<std::pair<int, double>>>> Mars_cpp::im
 		xs_scale.row(i) = xs_scale.row(i) / std::sqrt((Geno.row(i).array() - Geno.row(i).mean()).square().sum() / (Geno_cols - 1));
 	}
 
-
-	std::ofstream Xs_out("xs_cpp.txt");
-	Xs_out << xs_scale << std::endl;
-	Xs_out.close();
-
 	Eigen::VectorXd null_mean(Geno_cols); null_mean.setZero();
 	Eigen::MatrixXd null_covar(Geno_cols, Geno_cols); null_covar.setIdentity();
 	Eigen::MatrixXd Sall = rmvnorm_(simNum, null_mean, null_covar * std::sqrt(2)); // Geno_cols x simNum, *std::sqrt(2) for importance sampling
 
-	std::ofstream Sall_out("importance_Sal.txt");
-	Sall_out << Sall << std::endl;
-	Sall_out.close();
-
 	Eigen::MatrixXd Sall_new = (xs_scale / std::sqrt(Geno_cols)) * Sall; // Geno_rows x simNum
-
-
 
 	std::vector<std::pair<double, std::vector<std::pair<int, double>>>> WBS;
 	double Weight = 0.0f;
@@ -495,8 +477,11 @@ std::vector<std::pair<double, std::vector<std::pair<int, double>>>> Mars_cpp::im
 		}
 		std::sort(BS_element.begin(), BS_element.end(), cmp_int_double);
 		BS_element.resize(topNum);
-		Weight = std::log(dmvnorm_(Sall.col(i), null_mean, null_covar)) / std::log(dmvnorm_(Sall.col(i), null_mean, null_covar * std::sqrt(2)));
+		//Weight = std::log(dmvnorm_2(Sall.col(i), null_mean, null_covar)) / std::log(dmvnorm_2(Sall.col(i), null_mean, null_covar * std::sqrt(2)));
+		Weight = dmvnorm_2(Sall.col(i), null_mean, null_covar);
 		WBS.push_back(std::pair<double, std::vector<std::pair<int, double>>>(Weight, BS_element));
 	}
 	return WBS;
 }
+
+// ㅋ_ㅋ 

@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include <random>
+#include <io.h>
 
 #include "Eigen/Eigen/QR"
 #include "Eigen/Eigen/Core"
@@ -94,6 +95,7 @@ public:
 	double fastLikelihood(int* configure, double* stat);
 	double fracdmvnorm(Eigen::MatrixXd Z, Eigen::MatrixXd mean, Eigen::MatrixXd R, Eigen::MatrixXd diagC);
 	double dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat);
+	double dmvnorm_2(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat); //한개씩 계산댐.
 
 	long int fact(int n);
 	long int nCr(int n, int r);
