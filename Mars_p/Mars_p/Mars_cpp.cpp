@@ -1,28 +1,43 @@
 #include "Mars_cpp.h"
 
-Mars_cpp::Mars_cpp(std::string Geno, std::string Stat,int simNum_, double NCP_, double gamma_, int sub_size, int maxCausal_SNP, int mode, double UNI_threshold) {
+Mars_cpp::Mars_cpp(std::string Geno, std::string Stat, std::string ld,int simNum_, double NCP_, double gamma_, int sub_size, int maxCausal_SNP, int mode_, double UNI_threshold_) {
 	subsize = sub_size; //default = 50;
 	maxCausalSNP = maxCausal_SNP;
 	simNum = simNum_;
 	NCP = NCP_;
 	gamma = gamma_;
+	mode = mode_;
+	UNI_threshold = UNI_threshold_;
 
+
+	//*** don't give LD matrix
 	read_input_file(Geno, Stat); // Geno and Stat into GS var 
 	snpCount = GS.size();
-
 	stat = new double[snpCount];
-	
 	for (int i = 0; i < snpCount; i++) {
 		stat[i] = GS[i].second;
 	}
-	
-	Geno_part = read_mat(GS, subsize, 1);
 	Geno_all = read_mat(GS, snpCount, 1);
-	sigmaMatrix = cal_cor(Geno_part);
-	
-	std::cout << "Data preprocessing complete\n";
-	Geno_LD = generateLD(Geno_part);
-	std::cout << "LD calculation complete\n";
+
+	if (mode == 0) {
+		std::cout << "mode:0 - using normal sampling\n";
+		sigmaMatrix = cal_cor(Geno_all);
+		std::cout << "sigmaMatrix size is "<< sigmaMatrix.rows() << "x" << sigmaMatrix.cols() << "\n";
+		std::cout << "Data preprocessing complete\n";
+		Geno_LD = generateLD2(sigmaMatrix);
+		std::cout << "LD calculation complete\n";
+	}
+	else if (mode == 1 || mode == 2){
+		Geno_part = read_mat(GS, subsize, 1);
+		sigmaMatrix = cal_cor(Geno_part);
+		std::cout << "Data preprocessing complete\n";
+		Geno_LD = generateLD(Geno_part);
+		std::cout << "LD calculation complete\n";
+	}
+	else {
+		std::cout << "The mode number isn't correct. mode: " << mode << "\n";
+		return;
+	}
 
 	//alt
 	alt_pvalue = computePvalue(GS[0].second);
@@ -32,61 +47,8 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat,int simNum_, double NCP_, 
 	std::cout << "alteration LRTscore is " << LRTscore << std::endl;
 	pvalue_count = 0; LRT_count = 0;
 
-	if (mode == 0) {
-		BS = basic_sampling(simNum, subsize, Geno_all);
-		for (int i = 0; i < simNum; i++) { //simNum
-			Eigen::MatrixXd BS_Geno(subsize, Geno_all.cols());
-			for (int j = 0; j < subsize; j++) {
-				stat[j] = BS[i][j].second;
-				BS_Geno.row(j) = Geno_all.row(BS[i][j].first);
-			}
+	//***  don't give LD matrix
 
-			sigmaMatrix = cal_cor(BS_Geno);
-			makeSigmaPositiveSemiDefinite(sigmaMatrix);
-			if (computePvalue(stat[0]) < alt_pvalue) { pvalue_count++; }
-			computeLRT(stat);
-			if (LRTscore > alt_LRTscore) { LRT_count++; }
-			//std::cout << "Sampling pvalue is " << computePvalue(stat[0]) << std::endl;
-			//std::cout << "Sampling LRTscore is " << LRTscore << std::endl;
-		}
-		std::cout << "pvalue_LRT = " << (double)LRT_count/simNum << std::endl;
-		std::cout << "pvalue_UNI = " << (double)pvalue_count/simNum << std::endl;
-	}
-	else if (mode == 1) {
-		WBS = importance_sampling(simNum, subsize, Geno_all);
-		double wsum_1 = 0.0;   //for pvalue threshold
-		double wsum_2 = 0.0;   //for UNI pvalue
-		double wsum_3 = 0.0;   //for UNI LRT value
-		double sum = 0.0;
-		for (int i = 0; i < simNum; i++) { //simNum
-			Eigen::MatrixXd BS_Geno(subsize, Geno_all.cols());
-			for (int j = 0; j < subsize; j++) {
-				stat[j] = WBS[i].second[j].second;
-				BS_Geno.row(j) = Geno_all.row(WBS[i].second[j].first);
-			}
-			sigmaMatrix = cal_cor(BS_Geno);
-			makeSigmaPositiveSemiDefinite(sigmaMatrix);
-			double nullUNI_pvalue = computePvalue(stat[0]);
-			//std::cout << "Importance Sampling pvalue is " << computePvalue(stat[0]) << std::endl;
-			//std::cout << WBS[i].first << std::endl;;
-
-			if (nullUNI_pvalue < UNI_threshold) { wsum_1 += WBS[i].first; }
-			if (nullUNI_pvalue < alt_pvalue) { wsum_2 += WBS[i].first; }
-			computeLRT(stat);
-			//std::cout << "Importance Sampling LRTscore is " << LRTscore << std::endl;
-			if (LRTscore > alt_LRTscore) { wsum_3 += WBS[i].first; }
-			sum += WBS[i].first;
-		}
-		std::cout << sum << " " << wsum_1 << " " << wsum_2 << " " << wsum_3 << "\n";
-		std::cout << "LRT_pvalue = " << wsum_3 << "/" <<  sum << "\n";
-		std::cout << "UNI_pvalue = " << wsum_2 << "/" << sum << "\n";
-		std::cout << "UNI_threshold = " << wsum_1 << "/" << sum << "\n";
-
-	}
-	else {
-		std::cout << "mode error, input 0 or 1" << std::endl;
-		return;
-	}
 };
 
 int Mars_cpp::nextBinary(int* data, int size) { // 경우의수 출력하는 함수인듯.
@@ -334,6 +296,13 @@ Eigen::MatrixXd Mars_cpp::generateLD(Eigen::MatrixXd& mat) {
 	return solver.eigenvectors() * solver.eigenvalues().cwiseMax(0).asDiagonal() * solver.eigenvectors().transpose(); 
 }
 
+Eigen::MatrixXd Mars_cpp::generateLD2(Eigen::MatrixXd& sigmaMat) {
+	SelfAdjointEigenSolver<MatrixXd> solver(0.5 * (sigmaMat + sigmaMat.transpose()));
+
+	return solver.eigenvectors() * solver.eigenvalues().cwiseMax(0).asDiagonal() * solver.eigenvectors().transpose();
+}
+
+
 
 void Mars_cpp::makeSigmaPositiveSemiDefinite(Eigen::MatrixXd& mat) {
 	
@@ -384,10 +353,77 @@ void Mars_cpp::read_input_file(std::string Geno, std::string Stat) {
 }
 
 void Mars_cpp::run() {
-	
+	if (mode == 0) { //normal MARS, no sampling, use snpxsnp size LD matrix
+		NS = normal_sampling(simNum, snpCount);
+		makeSigmaPositiveSemiDefinite(sigmaMatrix);
+		for (int i = 0; i < simNum; i++) { //simNum
+			for (int j = 0; j < snpCount; j++) {
+				stat[j] = NS[i][j].second;
+			}
+			if (computePvalue(stat[0]) < alt_pvalue) { pvalue_count++; }
+			computeLRT(stat);
+			if (LRTscore > alt_LRTscore) { LRT_count++; }
+			//std::cout << "Sampling pvalue is " << computePvalue(stat[0]) << std::endl;
+			//std::cout << "Sampling LRTscore is " << LRTscore << std::endl;
+		}
+		std::cout << "pvalue_LRT = " << (double)LRT_count / simNum << std::endl;
+		std::cout << "pvalue_UNI = " << (double)pvalue_count / simNum << std::endl;
 
+	}
+	else if (mode == 1) {
+		BS = fast_sampling(simNum, subsize, Geno_all);
+		for (int i = 0; i < simNum; i++) { //simNum
+			Eigen::MatrixXd BS_Geno(subsize, Geno_all.cols());
+			for (int j = 0; j < subsize; j++) {
+				stat[j] = BS[i][j].second;
+				BS_Geno.row(j) = Geno_all.row(BS[i][j].first);
+			}
 
+			sigmaMatrix = cal_cor(BS_Geno);
+			makeSigmaPositiveSemiDefinite(sigmaMatrix);
+			if (computePvalue(stat[0]) < alt_pvalue) { pvalue_count++; }
+			computeLRT(stat);
+			if (LRTscore > alt_LRTscore) { LRT_count++; }
+			//std::cout << "Sampling pvalue is " << computePvalue(stat[0]) << std::endl;
+			//std::cout << "Sampling LRTscore is " << LRTscore << std::endl;
+		}
+		std::cout << "pvalue_LRT = " << (double)LRT_count / simNum << std::endl;
+		std::cout << "pvalue_UNI = " << (double)pvalue_count / simNum << std::endl;
+	}
+	else if (mode == 2) {
+		WBS = importance_sampling(simNum, subsize, Geno_all);
+		double wsum_1 = 0.0;   //for pvalue threshold
+		double wsum_2 = 0.0;   //for UNI pvalue
+		double wsum_3 = 0.0;   //for UNI LRT value
+		double sum = 0.0;
+		for (int i = 0; i < simNum; i++) { //simNum
+			Eigen::MatrixXd BS_Geno(subsize, Geno_all.cols());
+			for (int j = 0; j < subsize; j++) {
+				stat[j] = WBS[i].second[j].second;
+				BS_Geno.row(j) = Geno_all.row(WBS[i].second[j].first);
+			}
+			sigmaMatrix = cal_cor(BS_Geno);
+			makeSigmaPositiveSemiDefinite(sigmaMatrix);
+			double nullUNI_pvalue = computePvalue(stat[0]);
+			//std::cout << "Importance Sampling pvalue is " << computePvalue(stat[0]) << std::endl;
+			//std::cout << WBS[i].first << std::endl;;
 
+			if (nullUNI_pvalue < UNI_threshold) { wsum_1 += WBS[i].first; }
+			if (nullUNI_pvalue < alt_pvalue) { wsum_2 += WBS[i].first; }
+			computeLRT(stat);
+			//std::cout << "Importance Sampling LRTscore is " << LRTscore << std::endl;
+			if (LRTscore > alt_LRTscore) { wsum_3 += WBS[i].first; }
+			sum += WBS[i].first;
+		}
+		std::cout << sum << " " << wsum_1 << " " << wsum_2 << " " << wsum_3 << "\n";
+		std::cout << "LRT_pvalue = " << wsum_3 << "/" << sum << "\n";
+		std::cout << "UNI_pvalue = " << wsum_2 << "/" << sum << "\n";
+		std::cout << "UNI_threshold = " << wsum_1 << "/" << sum << "\n";
+	}
+	else {
+		std::cout << "mode error, input 0 or 1" << std::endl;
+		return;
+	}
 
 }
 
@@ -422,8 +458,24 @@ Eigen::MatrixXd Mars_cpp::read_mat(std::vector<std::pair<std::string, double>> X
 	}
 	return ret_mat;
 }
+std::vector<std::vector<std::pair<int, double>>> Mars_cpp::normal_sampling(int simNum, int topNum) {
+	Eigen::VectorXd null_mean(snpCount); null_mean.setZero();
+	Eigen::MatrixXd Sall = rmvnorm_(simNum, null_mean, Geno_LD); // Geno_cols x simNum
 
-std::vector<std::vector<std::pair<int, double>>> Mars_cpp::basic_sampling(int simNum, int topNum, Eigen::MatrixXd Geno) { // Geno row x col row is indi, col is snp count
+	std::vector< std::vector<std::pair<int, double>>> NS;
+	for (int i = 0; i < simNum; i++) {
+		std::vector<std::pair<int, double>> NS_element;
+		for (int j = 0; j < snpCount; j++) {
+			NS_element.push_back(std::pair<int, double>(j, Sall(j, i)));
+		}
+		std::sort(NS_element.begin(), NS_element.end(), cmp_int_double);
+		NS_element.resize(topNum); NS.push_back(NS_element);
+	}
+	//	Sall_out.close();
+	return NS;
+}
+
+std::vector<std::vector<std::pair<int, double>>> Mars_cpp::fast_sampling(int simNum, int topNum, Eigen::MatrixXd Geno) { // Geno row x col row is indi, col is snp count
 	int Geno_cols = Geno.cols();
 	int Geno_rows = Geno.rows();
 

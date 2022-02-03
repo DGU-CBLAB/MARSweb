@@ -8,7 +8,6 @@
 #include <vector>
 #include <map>
 #include <random>
-#include <io.h>
 
 #include "Eigen/Eigen/QR"
 #include "Eigen/Eigen/Core"
@@ -65,6 +64,7 @@ private:
 	double* histValues;
 	double* stat;
 
+	double UNI_threshold;
 	double LRTscore;
 	double pvalue;
 	double NCP;
@@ -81,11 +81,12 @@ private:
 
 public:
 
+	std::vector<std::vector<std::pair<int, double>>> NS;
 	std::vector<std::vector<std::pair<int, double>>> BS;
 	std::vector<std::pair<double, std::vector<std::pair<int, double>>>> WBS;
 
 
-	Mars_cpp(std::string Geno, std::string Stat, int simNum_, double NCP_, double gamma_, int subsize,int maxCausal_SNP,int mode, double UNI_threshold);
+	Mars_cpp(std::string Geno, std::string Stat, std::string ld, int simNum_, double NCP_, double gamma_, int subsize,int maxCausal_SNP,int mode_, double UNI_threshold_);
 
 	int nextBinary(int* data, int size);
 	int count_string_col(std::string str);
@@ -102,10 +103,13 @@ public:
 
 	Eigen::MatrixXd cal_cor(Eigen::MatrixXd& mat); //makesubSigma
 	Eigen::MatrixXd generateLD(Eigen::MatrixXd& mat);
+	Eigen::MatrixXd generateLD2(Eigen::MatrixXd& sigmaMat);
+
 	Eigen::MatrixXd read_mat(std::vector<std::pair<std::string, double>> X, int row, int start_number);
 	Eigen::MatrixXd rmvnorm_(int simulation_Number, Eigen::VectorXd mean, Eigen::MatrixXd covar);
 
-	std::vector<std::vector<std::pair<int, double>>> basic_sampling(int simNum, int topNum, Eigen::MatrixXd Geno);
+	std::vector<std::vector<std::pair<int, double>>> normal_sampling(int simNum, int topNum);
+	std::vector<std::vector<std::pair<int, double>>> fast_sampling(int simNum, int topNum, Eigen::MatrixXd Geno);
 	std::vector<std::pair<double, std::vector<std::pair<int, double>>>> importance_sampling(int simNum, int topNum, Eigen::MatrixXd Geno);
 
 	//void makeSubSigma(double* snp, double* sigma, int subSize, int sampleSize);
