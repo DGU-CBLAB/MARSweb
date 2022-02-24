@@ -13,7 +13,7 @@ int main() { // interface 제작 int argc, char* argv[]
 
 	
 	// default value
-	int simNum = 10000;
+	int simNum = 1000000;
 	int sub_size = 50;
 	int maxCausal_SNP = 2;
 	int mode = 0; //0 is normal MARS, 1 is basic sampling, 2 is importance sampling
@@ -81,9 +81,16 @@ int main() { // interface 제작 int argc, char* argv[]
 	std::cout << "simulation count:" << simNum << "\n";
 	std::cout << "max Casual snp count:" << maxCausal_SNP << "\n";
 
-	Mars_cpp M(geno_path, stat_path, ld_path, simNum, NCP, gamma, sub_size, maxCausal_SNP, mode, UNI_threshold);
+	std::clock_t start = std::clock();
 
+
+	Mars_cpp M(geno_path, stat_path, ld_path, simNum, NCP, gamma, sub_size, maxCausal_SNP, mode, UNI_threshold);
+	std::cout << "??" << std::endl;
 	M.run();
+
+	double duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+	std::cout << "running time = " << duration << " secs\n";
+
 
 	std::cout << "Analysis done" << std::endl;
 

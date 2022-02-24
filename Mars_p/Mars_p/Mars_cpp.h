@@ -23,6 +23,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>    
 
+
 static std::mt19937 ran;
 using namespace Eigen;
 
@@ -103,7 +104,6 @@ public:
 
 	Eigen::MatrixXd cal_cor(Eigen::MatrixXd& mat); //makesubSigma
 	Eigen::MatrixXd generateLD(Eigen::MatrixXd& mat);
-	Eigen::MatrixXd generateLD2(Eigen::MatrixXd& sigmaMat);
 
 	Eigen::MatrixXd read_mat(std::vector<std::pair<std::string, double>> X, int row, int start_number);
 	Eigen::MatrixXd rmvnorm_(int simulation_Number, Eigen::VectorXd mean, Eigen::MatrixXd covar);
@@ -113,7 +113,9 @@ public:
 	std::vector<std::pair<double, std::vector<std::pair<int, double>>>> importance_sampling(int simNum, int topNum, Eigen::MatrixXd Geno);
 
 	//void makeSubSigma(double* snp, double* sigma, int subSize, int sampleSize);
+
 	void makeSigmaPositiveSemiDefinite(Eigen::MatrixXd& mat);
+//	void makeSigmaPositiveSemiDefinite(double* sigma, int size);
 	void read_input_file(std::string Geno, std::string Stat);
 	void computeLRT(double* stat);
 	void run();

@@ -21,17 +21,15 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat, std::string ld,int simNum
 
 	if (mode == 0) {
 		std::cout << "mode:0 - using normal sampling\n";
-		sigmaMatrix = cal_cor(Geno_all);
-		std::cout << "sigmaMatrix size is "<< sigmaMatrix.rows() << "x" << sigmaMatrix.cols() << "\n";
-		std::cout << "Data preprocessing complete\n";
-		Geno_LD = generateLD2(sigmaMatrix);
+//		sigmaMatrix = cal_cor(Geno_all);
+//		makeSigmaPositiveSemiDefinite(sigmaMatrix);
+		sigmaMatrix = generateLD(Geno_all);
+		std::cout << "sigmaMatrix size is " << sigmaMatrix.rows() << "x" << sigmaMatrix.cols() << "\n";
 		std::cout << "LD calculation complete\n";
 	}
 	else if (mode == 1 || mode == 2){
 		Geno_part = read_mat(GS, subsize, 1);
-		sigmaMatrix = cal_cor(Geno_part);
-		std::cout << "Data preprocessing complete\n";
-		Geno_LD = generateLD(Geno_part);
+		sigmaMatrix = generateLD(Geno_part);
 		std::cout << "LD calculation complete\n";
 	}
 	else {
@@ -48,7 +46,6 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat, std::string ld,int simNum
 	pvalue_count = 0; LRT_count = 0;
 
 	//***  don't give LD matrix
-
 };
 
 int Mars_cpp::nextBinary(int* data, int size) { // 경우의수 출력하는 함수인듯.
@@ -106,7 +103,6 @@ int Mars_cpp::nextBinary(int* data, int size) { // 경우의수 출력하는 함수인듯.
 
 	return(total_one);
 }
-
 int Mars_cpp::count_string_col(std::string str) {
 	std::string token;
 	std::stringstream stream; int count = 0;
@@ -117,28 +113,23 @@ int Mars_cpp::count_string_col(std::string str) {
 	}
 	return count;
 }
-
 double Mars_cpp::computePvalue(double max_stat) {
 	return 2 * normaICDF(-fabs(max_stat));
 }
-
 double Mars_cpp::normaICDF(double value) {
 	return 0.5 * erfc(-value * M_SQRT1_2);
 }
-
 long int Mars_cpp::fact(int n) {
 	if (n == 0)
 		return 1;
 	return n * fact(n - 1);
 }
-
 long int Mars_cpp::nCr(int n, int r) {
 	long int result = 1;
 	for (int i = n; i > n - r; i--)
 		result *= i;
 	return result / fact(r);
 }
-
 void Mars_cpp::computeLRT(double* stat) {
 	int num = 0; //int total = 0;
 	double sumLikelihood = 0;
@@ -163,7 +154,6 @@ void Mars_cpp::computeLRT(double* stat) {
 	//for(int i=0; i<subsize; i++) total = total+stat[i];
 	//if(total==0) LRTscore= 10000000; 
 }
-
 double Mars_cpp::fastLikelihood(int* configure, double* stat) {
 	int causalCount = 0;
 	std::vector<int> causalIndex;
@@ -200,7 +190,6 @@ double Mars_cpp::fastLikelihood(int* configure, double* stat) {
 	}
 	return fracdmvnorm(Zcc, mean, Rcc, diagC);
 }
-
 double Mars_cpp::fracdmvnorm(Eigen::MatrixXd Z, Eigen::MatrixXd mean, Eigen::MatrixXd R, Eigen::MatrixXd diagC) {
 	Eigen::MatrixXd newR = R + R * diagC * R;
 	Eigen::MatrixXd ZcenterMean = Z - mean;
@@ -212,7 +201,6 @@ double Mars_cpp::fracdmvnorm(Eigen::MatrixXd Z, Eigen::MatrixXd mean, Eigen::Mat
 	double v1 = res1(0, 0) / 2 - res2(0, 0) / 2 - baseValue / 2;
 	return(exp(v1) / sqrt(newR.determinant()) * sqrt(R.determinant()));
 }
-
 double Mars_cpp::dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat) //한개씩 계산댐.
 {
 	// avoid magic numbers in your code. Compilers will be able to compute this at compile time:
@@ -226,7 +214,6 @@ double Mars_cpp::dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanV
 	double quadform = (L.solve(x - meanVec)).squaredNorm();
 	return std::exp(-x.rows() * logSqrt2Pi - 0.5 * quadform) / L.determinant();
 }
-
 double Mars_cpp::dmvnorm_2(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat) //한개씩 계산댐.
 {
 	double n = x.rows();
@@ -235,7 +222,6 @@ double Mars_cpp::dmvnorm_2(const Eigen::VectorXd& x, const Eigen::VectorXd& mean
 	//std::cout << sqrtsqrt2 * std::exp((-0.5 * quadform * (1 - 1 / std::sqrt(2))))  << std::endl;
 	return sqrtsqrt2 * std::exp((-0.5 * quadform * (1 - 1 / std::sqrt(2))));
 }
-
 Eigen::MatrixXd Mars_cpp::rmvnorm_(int simulation_Number, Eigen::VectorXd mean, Eigen::MatrixXd covar) {
 
 	int size = mean.size(); // Dimensionality (rows)
@@ -250,7 +236,6 @@ Eigen::MatrixXd Mars_cpp::rmvnorm_(int simulation_Number, Eigen::VectorXd mean, 
 	Eigen::MatrixXd normTransform(size, size);
 
 	Eigen::LLT<Eigen::MatrixXd> cholSolver(covar);
-
 	// We can only use the cholesky decomposition if 
 	// the covariance matrix is symmetric, pos-definite.
 	// But a covariance matrix might be pos-semi-definite.
@@ -258,6 +243,7 @@ Eigen::MatrixXd Mars_cpp::rmvnorm_(int simulation_Number, Eigen::VectorXd mean, 
 	if (cholSolver.info() == Eigen::Success) {
 		// Use cholesky solver
 		normTransform = cholSolver.matrixL();
+
 	}
 	else {
 		// Use eigen solver
@@ -265,15 +251,11 @@ Eigen::MatrixXd Mars_cpp::rmvnorm_(int simulation_Number, Eigen::VectorXd mean, 
 		normTransform = eigenSolver.eigenvectors()
 			* eigenSolver.eigenvalues().cwiseSqrt().asDiagonal();
 	}
-
 	Eigen::MatrixXd samples = (normTransform
 		* Eigen::MatrixXd::NullaryExpr(size, nn, randN)).colwise()
 		+ mean;
-
-
 	return samples;
 }
-
 Eigen::MatrixXd Mars_cpp::cal_cor(Eigen::MatrixXd& mat) {
 	int mat_cols = mat.cols();
 	int mat_rows = mat.rows();
@@ -288,33 +270,58 @@ Eigen::MatrixXd Mars_cpp::cal_cor(Eigen::MatrixXd& mat) {
 
 	return ret;
 }
-
 Eigen::MatrixXd Mars_cpp::generateLD(Eigen::MatrixXd& mat) {
 	Eigen::MatrixXd cal_LD = cal_cor(mat);
-	SelfAdjointEigenSolver<MatrixXd> solver(0.5 * (cal_LD + cal_LD.transpose()));
-	
-	return solver.eigenvectors() * solver.eigenvalues().cwiseMax(0).asDiagonal() * solver.eigenvectors().transpose(); 
+	makeSigmaPositiveSemiDefinite(cal_LD);
+	return cal_LD;
+	//	SelfAdjointEigenSolver<MatrixXd> solver(0.5 * (cal_LD + cal_LD.transpose()));
+//	return solver.eigenvectors() * solver.eigenvalues().cwiseMax(0).asDiagonal() * solver.eigenvectors().transpose(); 
 }
-
-Eigen::MatrixXd Mars_cpp::generateLD2(Eigen::MatrixXd& sigmaMat) {
-	SelfAdjointEigenSolver<MatrixXd> solver(0.5 * (sigmaMat + sigmaMat.transpose()));
-
-	return solver.eigenvectors() * solver.eigenvalues().cwiseMax(0).asDiagonal() * solver.eigenvectors().transpose();
-}
-
-
-
+//void Mars_cpp::makeSigmaPositiveSemiDefinite(double * sigma, int size) {
+//	int gsl_tmp = 0;
+//	double matDet = 0;
+//	double addDiag = 0;
+//	bool positive = false;
+//
+//	//gsl_set_error_handler_off();	
+//	gsl_matrix* tmpResultMatrix = gsl_matrix_calloc(size, size);
+//	gsl_permutation* p = gsl_permutation_alloc(size);
+//	std::cout << "size is " << size << std::endl;
+//	do {
+//		for (int i = 0; i < size; i++) {
+//			for (int j = 0; j < size; j++) {
+//				if (i == j)
+//					gsl_matrix_set(tmpResultMatrix, i, j, sigma[i * size + j] + addDiag);
+//				else
+//					gsl_matrix_set(tmpResultMatrix, i, j, sigma[i * size + j]);
+//			}
+//		}
+//		gsl_linalg_LU_decomp(tmpResultMatrix, p, &gsl_tmp);
+//		matDet = gsl_linalg_LU_det(tmpResultMatrix, gsl_tmp);
+//		std::cout << matDet << "\t" << addDiag << std::endl;
+//		if (matDet > 0)
+//			positive = true;
+//		else {
+//			addDiag += 0.1;
+//		}
+//		std::cout << "mat determinant is " << matDet << std::endl;
+//	} while (!positive);
+//	std::cout << "mat determinant check is over" << std::endl;
+//	for (int i = 0; i < size * size; i++) {
+//		if (i % (size + 1) == 0)
+//			sigma[i] = sigma[i] + addDiag;
+//	}
+//}
 void Mars_cpp::makeSigmaPositiveSemiDefinite(Eigen::MatrixXd& mat) {
-	
+
 	Eigen::MatrixXd iden(mat.rows(), mat.cols()); iden.setIdentity();
-	//std::cout <<"mat determinant is "<< mat.lu().determinant() << std::endl;
+	std::cout <<"mat determinant is "<< mat.lu().determinant() << std::endl;
 	while (mat.lu().determinant() <= 0) {
 		mat = mat + 0.1 * iden;
-	//std::cout << "mat determinant is " << mat.lu().determinant() << std::endl;
+	//	std::cout << "mat determinant is " << mat.lu().determinant() << std::endl;
 	}
-	//std::cout << "mat determinant check is over" << std::endl;
+	std::cout << "mat determinant check is over" << std::endl;
 }
-
 void Mars_cpp::read_input_file(std::string Geno, std::string Stat) {
 	std::ifstream geno(Geno);
 	std::ifstream stat(Stat);
@@ -343,7 +350,9 @@ void Mars_cpp::read_input_file(std::string Geno, std::string Stat) {
 			exit(1);
 		}
 		stat >> stemp; getline(geno, gtemp);
-		GS.push_back(std::pair<std::string, double>(gtemp, stemp));
+		if (gtemp != "") {
+			GS.push_back(std::pair<std::string, double>(gtemp, stemp));
+		}
 	}
 
 	std::sort(this->GS.begin(), this->GS.end(), cmp_str_double);
@@ -351,24 +360,25 @@ void Mars_cpp::read_input_file(std::string Geno, std::string Stat) {
 	std::cout << "Descending sort done\n";
 	geno.close(); stat.close();
 }
-
 void Mars_cpp::run() {
 	if (mode == 0) { //normal MARS, no sampling, use snpxsnp size LD matrix
 		NS = normal_sampling(simNum, snpCount);
-		makeSigmaPositiveSemiDefinite(sigmaMatrix);
+
 		for (int i = 0; i < simNum; i++) { //simNum
 			for (int j = 0; j < snpCount; j++) {
 				stat[j] = NS[i][j].second;
 			}
+//			std::cout << i << "stat: " << stat[0] << std::endl;
+//			std::cout <<i << "th pvalue: " << computePvalue(stat[0]) << std::endl;
 			if (computePvalue(stat[0]) < alt_pvalue) { pvalue_count++; }
 			computeLRT(stat);
+//			std::cout << i << "th lrt_score: " << LRTscore << std::endl;
 			if (LRTscore > alt_LRTscore) { LRT_count++; }
 			//std::cout << "Sampling pvalue is " << computePvalue(stat[0]) << std::endl;
 			//std::cout << "Sampling LRTscore is " << LRTscore << std::endl;
 		}
 		std::cout << "pvalue_LRT = " << (double)LRT_count / simNum << std::endl;
 		std::cout << "pvalue_UNI = " << (double)pvalue_count / simNum << std::endl;
-
 	}
 	else if (mode == 1) {
 		BS = fast_sampling(simNum, subsize, Geno_all);
@@ -379,13 +389,10 @@ void Mars_cpp::run() {
 				BS_Geno.row(j) = Geno_all.row(BS[i][j].first);
 			}
 
-			sigmaMatrix = cal_cor(BS_Geno);
-			makeSigmaPositiveSemiDefinite(sigmaMatrix);
+			sigmaMatrix = generateLD(BS_Geno);
 			if (computePvalue(stat[0]) < alt_pvalue) { pvalue_count++; }
 			computeLRT(stat);
 			if (LRTscore > alt_LRTscore) { LRT_count++; }
-			//std::cout << "Sampling pvalue is " << computePvalue(stat[0]) << std::endl;
-			//std::cout << "Sampling LRTscore is " << LRTscore << std::endl;
 		}
 		std::cout << "pvalue_LRT = " << (double)LRT_count / simNum << std::endl;
 		std::cout << "pvalue_UNI = " << (double)pvalue_count / simNum << std::endl;
@@ -402,11 +409,10 @@ void Mars_cpp::run() {
 				stat[j] = WBS[i].second[j].second;
 				BS_Geno.row(j) = Geno_all.row(WBS[i].second[j].first);
 			}
-			sigmaMatrix = cal_cor(BS_Geno);
-			makeSigmaPositiveSemiDefinite(sigmaMatrix);
+			sigmaMatrix = generateLD(BS_Geno);
 			double nullUNI_pvalue = computePvalue(stat[0]);
-			//std::cout << "Importance Sampling pvalue is " << computePvalue(stat[0]) << std::endl;
-			//std::cout << WBS[i].first << std::endl;;
+			std::cout << "Importance Sampling pvalue is " << computePvalue(stat[0]) << std::endl;
+			std::cout << WBS[i].first << std::endl;;
 
 			if (nullUNI_pvalue < UNI_threshold) { wsum_1 += WBS[i].first; }
 			if (nullUNI_pvalue < alt_pvalue) { wsum_2 += WBS[i].first; }
@@ -424,7 +430,6 @@ void Mars_cpp::run() {
 		std::cout << "mode error, input 0 or 1" << std::endl;
 		return;
 	}
-
 }
 
 bool cmp_str_double(std::pair<std::string, double> left, std::pair<std::string, double> right) { //for sort vector GS
@@ -460,10 +465,11 @@ Eigen::MatrixXd Mars_cpp::read_mat(std::vector<std::pair<std::string, double>> X
 }
 std::vector<std::vector<std::pair<int, double>>> Mars_cpp::normal_sampling(int simNum, int topNum) {
 	Eigen::VectorXd null_mean(snpCount); null_mean.setZero();
-	Eigen::MatrixXd Sall = rmvnorm_(simNum, null_mean, Geno_LD); // Geno_cols x simNum
+	Eigen::MatrixXd Sall = rmvnorm_(simNum, null_mean, sigmaMatrix); // Geno_cols x simNum
 
 	std::vector< std::vector<std::pair<int, double>>> NS;
 	for (int i = 0; i < simNum; i++) {
+		std::cout <<"Sampling Process: "<< i << std::endl;
 		std::vector<std::pair<int, double>> NS_element;
 		for (int j = 0; j < snpCount; j++) {
 			NS_element.push_back(std::pair<int, double>(j, Sall(j, i)));
