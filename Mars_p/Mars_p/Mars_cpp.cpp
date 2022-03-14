@@ -8,7 +8,8 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat, std::string ld,int simNum
 	gamma = gamma_;
 	mode = mode_;
 	UNI_threshold = UNI_threshold_;
-
+	th_num = 10;
+	baseValue = 0.0;
 
 	//*** don't give LD matrix
 	read_input_file(Geno, Stat); // Geno and Stat into GS var 
@@ -20,9 +21,8 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat, std::string ld,int simNum
 	Geno_all = read_mat(GS, snpCount, 1);
 
 	if (mode == 0) {
+//		subsize = snpCount;
 		std::cout << "mode:0 - using normal sampling\n";
-//		sigmaMatrix = cal_cor(Geno_all);
-//		makeSigmaPositiveSemiDefinite(sigmaMatrix);
 		sigmaMatrix = generateLD(Geno_all);
 		std::cout << "sigmaMatrix size is " << sigmaMatrix.rows() << "x" << sigmaMatrix.cols() << "\n";
 		std::cout << "LD calculation complete\n";
@@ -130,7 +130,7 @@ long int Mars_cpp::nCr(int n, int r) {
 		result *= i;
 	return result / fact(r);
 }
-void Mars_cpp::computeLRT(double* stat) {
+void Mars_cpp::computeLRT(double* stat) { //with genotype
 	int num = 0; //int total = 0;
 	double sumLikelihood = 0;
 	double allZero_likelihood = 0;//define allZero_likelihood
@@ -144,7 +144,9 @@ void Mars_cpp::computeLRT(double* stat) {
 		configure[i] = 0;
 	for (long int i = 0; i < total_iteration; i++) {
 		tmp_likelihood = fastLikelihood(configure, stat) * (pow(gamma, num)) * (pow(1 - gamma, subsize - num));
-		if (i == 0) { allZero_likelihood = tmp_likelihood; }//save allzero likelihood
+		if (i == 0) { 
+			allZero_likelihood = tmp_likelihood;
+		}//save allzero likelihood
 		sumLikelihood += tmp_likelihood;
 		num = nextBinary(configure, subsize);
 	}//cout<<"here="<<sigmaMatrix(1,0)<<endl;
@@ -164,12 +166,12 @@ double Mars_cpp::fastLikelihood(int* configure, double* stat) {
 			causalIndex.push_back(i);
 	}
 	if (causalCount == 0) {
-		int maxVal = 0;
+		int maxVal = 0.0;
 		for (int i = 0; i < subsize; i++) {
 			if (maxVal < abs(stat[i]))
 				maxVal = stat[i];
 		}
-	//	baseValue = maxVal * maxVal;
+		baseValue = maxVal * maxVal;
 	}
 	Eigen::MatrixXd Rcc(causalCount, causalCount); Rcc.setZero();
 	Eigen::VectorXd Zcc(causalCount); Zcc.setZero();
@@ -195,8 +197,6 @@ double Mars_cpp::fracdmvnorm(Eigen::MatrixXd Z, Eigen::MatrixXd mean, Eigen::Mat
 	Eigen::MatrixXd ZcenterMean = Z - mean;
 	Eigen::MatrixXd res1 = ZcenterMean.transpose() * R.inverse() * (ZcenterMean);
 	Eigen::MatrixXd res2 = ZcenterMean.transpose() * newR.inverse() * (ZcenterMean);
-
-	double baseValue = 0.0; //maxVal * maxVal;
 
 	double v1 = res1(0, 0) / 2 - res2(0, 0) / 2 - baseValue / 2;
 	return(exp(v1) / sqrt(newR.determinant()) * sqrt(R.determinant()));
@@ -226,7 +226,6 @@ Eigen::MatrixXd Mars_cpp::rmvnorm_(int simulation_Number, Eigen::VectorXd mean, 
 
 	int size = mean.size(); // Dimensionality (rows)
 	int nn = simulation_Number;     // How many samples (columns) to draw
-
 	std::random_device rd_rng;
 	Eigen::internal::scalar_normal_dist_op<double> randN; // Gaussian functor
 	Eigen::internal::scalar_normal_dist_op<double>::rng.seed(rd_rng()); // Seed the rng
@@ -243,7 +242,6 @@ Eigen::MatrixXd Mars_cpp::rmvnorm_(int simulation_Number, Eigen::VectorXd mean, 
 	if (cholSolver.info() == Eigen::Success) {
 		// Use cholesky solver
 		normTransform = cholSolver.matrixL();
-
 	}
 	else {
 		// Use eigen solver
@@ -259,7 +257,6 @@ Eigen::MatrixXd Mars_cpp::rmvnorm_(int simulation_Number, Eigen::VectorXd mean, 
 Eigen::MatrixXd Mars_cpp::cal_cor(Eigen::MatrixXd& mat) {
 	int mat_cols = mat.cols();
 	int mat_rows = mat.rows();
-
 	Eigen::MatrixXd centered = mat.colwise() - mat.rowwise().mean(); //cov랑 틀림 주의할것!. 넣는 순서가 다름.
 	Eigen::MatrixXd ret(mat_rows, mat_rows);
 	for (int i = 0; i < mat_rows; i++) {
@@ -267,15 +264,14 @@ Eigen::MatrixXd Mars_cpp::cal_cor(Eigen::MatrixXd& mat) {
 			ret(i, j) = (centered.row(i) * centered.row(j).transpose()).sum() / (std::sqrt((centered.row(i) * centered.row(i).transpose()).sum()) * std::sqrt((centered.row(j) * centered.row(j).transpose()).sum()));
 		}
 	}
-
 	return ret;
 }
 Eigen::MatrixXd Mars_cpp::generateLD(Eigen::MatrixXd& mat) {
 	Eigen::MatrixXd cal_LD = cal_cor(mat);
 	makeSigmaPositiveSemiDefinite(cal_LD);
 	return cal_LD;
-	//	SelfAdjointEigenSolver<MatrixXd> solver(0.5 * (cal_LD + cal_LD.transpose()));
-//	return solver.eigenvectors() * solver.eigenvalues().cwiseMax(0).asDiagonal() * solver.eigenvectors().transpose(); 
+	//SelfAdjointEigenSolver<MatrixXd> solver(0.5 * (cal_LD + cal_LD.transpose()));
+	//return solver.eigenvectors() * solver.eigenvalues().cwiseMax(0).asDiagonal() * solver.eigenvectors().transpose(); 
 }
 //void Mars_cpp::makeSigmaPositiveSemiDefinite(double * sigma, int size) {
 //	int gsl_tmp = 0;
@@ -315,12 +311,12 @@ Eigen::MatrixXd Mars_cpp::generateLD(Eigen::MatrixXd& mat) {
 void Mars_cpp::makeSigmaPositiveSemiDefinite(Eigen::MatrixXd& mat) {
 
 	Eigen::MatrixXd iden(mat.rows(), mat.cols()); iden.setIdentity();
-	std::cout <<"mat determinant is "<< mat.lu().determinant() << std::endl;
+	//std::cout <<"mat determinant is "<< mat.lu().determinant() << std::endl;
 	while (mat.lu().determinant() <= 0) {
 		mat = mat + 0.1 * iden;
 	//	std::cout << "mat determinant is " << mat.lu().determinant() << std::endl;
 	}
-	std::cout << "mat determinant check is over" << std::endl;
+	//std::cout << "mat determinant check is over" << std::endl;
 }
 void Mars_cpp::read_input_file(std::string Geno, std::string Stat) {
 	std::ifstream geno(Geno);
@@ -360,15 +356,38 @@ void Mars_cpp::read_input_file(std::string Geno, std::string Stat) {
 	std::cout << "Descending sort done\n";
 	geno.close(); stat.close();
 }
-void Mars_cpp::run() {
+void Mars_cpp::run() { // Genotype data exist
 	if (mode == 0) { //normal MARS, no sampling, use snpxsnp size LD matrix
-		NS = normal_sampling(simNum, snpCount);
+		
+		//Eigen::VectorXd null_mean(snpCount); null_mean.setZero();
+		//Eigen::MatrixXd Sall = rmvnorm_(simNum, null_mean, sigmaMatrix); // Geno_cols x simNum
+		//std::thread* th = new std::thread[th_num];
+		//for (int i = 0; i < th_num; i++) {
+		//	th[i] = std::thread(&Mars_cpp::normal_sampling_analyze, this, (simNum/th_num)*i, (simNum/th_num) *(i+1), snpCount, std::ref(Sall));
+		//	std::cout << i << "th thread start" << std::endl;
+		//}
+		//for (int i = 0; i < th_num; i++) {
+		//	th[i].join();
+		//	std::cout << i << "th thread join" << std::endl;
+		//}
+		//delete[] th;
+		//std::cout << "P_sum = " << pvalue_count << "LRT_sum = " << LRT_count << std::endl;
 
+		NS = normal_sampling(simNum, subsize);
+		Eigen::MatrixXd origin_sigmaMatrix = sigmaMatrix;
 		for (int i = 0; i < simNum; i++) { //simNum
-			for (int j = 0; j < snpCount; j++) {
+			sigmaMatrix.resize(0, 0);
+			Eigen::MatrixXd temp_sigmaMatrix(subsize, subsize);
+			for (int j = 0; j < subsize; j++) {
+				for (int k = 0; k < subsize; k++) {
+					temp_sigmaMatrix(j, k) = origin_sigmaMatrix(NS[i][j].first, NS[i][k].first);
+				}
+			}
+			sigmaMatrix = temp_sigmaMatrix;
+
+			for (int j = 0; j < subsize; j++) {
 				stat[j] = NS[i][j].second;
 			}
-//			std::cout << i << "stat: " << stat[0] << std::endl;
 //			std::cout <<i << "th pvalue: " << computePvalue(stat[0]) << std::endl;
 			if (computePvalue(stat[0]) < alt_pvalue) { pvalue_count++; }
 			computeLRT(stat);
@@ -392,6 +411,7 @@ void Mars_cpp::run() {
 			sigmaMatrix = generateLD(BS_Geno);
 			if (computePvalue(stat[0]) < alt_pvalue) { pvalue_count++; }
 			computeLRT(stat);
+//			std::cout << i << "th lrt_score: " << LRTscore << std::endl;
 			if (LRTscore > alt_LRTscore) { LRT_count++; }
 		}
 		std::cout << "pvalue_LRT = " << (double)LRT_count / simNum << std::endl;
@@ -428,7 +448,7 @@ void Mars_cpp::run() {
 	}
 	else {
 		std::cout << "mode error, input 0 or 1" << std::endl;
-		return;
+		exit(1);
 	}
 }
 
@@ -442,7 +462,6 @@ bool cmp_int_double(std::pair<int, double> left, std::pair<int, double> right) {
 
 Eigen::MatrixXd Mars_cpp::read_mat(std::vector<std::pair<std::string, double>> X, int row, int start_number) {
 	//start_number default = 0, but if using MARS, start_number is 1
-
 	std::string read_buffer;
 	std::string token;
 	std::stringstream stream;
@@ -466,10 +485,9 @@ Eigen::MatrixXd Mars_cpp::read_mat(std::vector<std::pair<std::string, double>> X
 std::vector<std::vector<std::pair<int, double>>> Mars_cpp::normal_sampling(int simNum, int topNum) {
 	Eigen::VectorXd null_mean(snpCount); null_mean.setZero();
 	Eigen::MatrixXd Sall = rmvnorm_(simNum, null_mean, sigmaMatrix); // Geno_cols x simNum
-
 	std::vector< std::vector<std::pair<int, double>>> NS;
 	for (int i = 0; i < simNum; i++) {
-		std::cout <<"Sampling Process: "<< i << std::endl;
+//		std::cout <<"Sampling Process: "<< i << std::endl;
 		std::vector<std::pair<int, double>> NS_element;
 		for (int j = 0; j < snpCount; j++) {
 			NS_element.push_back(std::pair<int, double>(j, Sall(j, i)));
@@ -477,8 +495,27 @@ std::vector<std::vector<std::pair<int, double>>> Mars_cpp::normal_sampling(int s
 		std::sort(NS_element.begin(), NS_element.end(), cmp_int_double);
 		NS_element.resize(topNum); NS.push_back(NS_element);
 	}
+	
 	//	Sall_out.close();
 	return NS;
+}
+
+void Mars_cpp::normal_sampling_analyze(int start, int end, int topNum, Eigen::MatrixXd Sall) {
+	for (int i = start; i < end; i++) {
+		//std::cout <<"Sampling Process: "<< i << std::endl;
+		std::vector<std::pair<int, double>> NS_element;
+		for (int j = 0; j < snpCount; j++) {
+			NS_element.push_back(std::pair<int, double>(j, Sall(j, i)));
+		}
+		std::sort(NS_element.begin(), NS_element.end(), cmp_int_double);
+		NS_element.resize(topNum);
+		for (int j = 0; j < snpCount; j++) {
+			stat[j] = NS_element[j].second;
+		}
+		if (computePvalue(stat[0]) < alt_pvalue) { pvalue_count++; }
+		computeLRT(stat);
+		if (LRTscore > alt_LRTscore) { LRT_count++; }
+	}
 }
 
 std::vector<std::vector<std::pair<int, double>>> Mars_cpp::fast_sampling(int simNum, int topNum, Eigen::MatrixXd Geno) { // Geno row x col row is indi, col is snp count

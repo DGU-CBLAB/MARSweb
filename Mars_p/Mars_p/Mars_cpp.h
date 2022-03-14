@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include <random>
+#include <thread>
 
 #include "Eigen/Eigen/QR"
 #include "Eigen/Eigen/Core"
@@ -58,8 +59,9 @@ private:
 	int maxCausalSNP;
 	int snpCount;
 	int simNum;
-	int LRT_count;
-	int pvalue_count;
+	std::atomic<int> LRT_count;
+	std::atomic<int> pvalue_count;
+	int th_num;
 
 	double* postValues;
 	double* histValues;
@@ -72,6 +74,7 @@ private:
 	double gamma;
 	double alt_LRTscore;
 	double alt_pvalue;
+	double baseValue;
 
 	std::vector<std::pair<std::string, double>> GS;
 
@@ -109,6 +112,8 @@ public:
 	Eigen::MatrixXd rmvnorm_(int simulation_Number, Eigen::VectorXd mean, Eigen::MatrixXd covar);
 
 	std::vector<std::vector<std::pair<int, double>>> normal_sampling(int simNum, int topNum);
+	void normal_sampling_analyze(int start, int end, int topNum, Eigen::MatrixXd Sall);
+
 	std::vector<std::vector<std::pair<int, double>>> fast_sampling(int simNum, int topNum, Eigen::MatrixXd Geno);
 	std::vector<std::pair<double, std::vector<std::pair<int, double>>>> importance_sampling(int simNum, int topNum, Eigen::MatrixXd Geno);
 
@@ -117,7 +122,7 @@ public:
 	void makeSigmaPositiveSemiDefinite(Eigen::MatrixXd& mat);
 //	void makeSigmaPositiveSemiDefinite(double* sigma, int size);
 	void read_input_file(std::string Geno, std::string Stat);
-	void computeLRT(double* stat);
+	void computeLRT(double* stat); // with LD
 	void run();
 
 	~Mars_cpp() {
