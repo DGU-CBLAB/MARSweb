@@ -5,88 +5,111 @@
 
 bool isNumber(const std::string& str);
 
-int main() { // interface 제작 int argc, char* argv[]
+int main(int argc, char* argv[]) { // interface 제작 int argc, char* argv[]
 
-	std::string geno_path = "ENSG00000173862.3_GENO";
-	std::string stat_path = "ENSG00000173862.3_STAT";
-	std::string ld_path = "";
+	std::string geno_path = "none";
+	std::string stat_path = "none";
+	std::string ld_path = "none";
 
 	
 	// default value
-	int simNum = 10000;
+	int simNum = 1000;
 	int sub_size = 50;
 	int maxCausal_SNP = 2;
-	int mode = 1; //0 is normal MARS, 1 is basic sampling, 2 is importance sampling
+	int mode = 0; //0 is normal MARS, 1 is basic sampling, 2 is importance sampling
 
 	double NCP = 5.7;
 	double gamma = 0.01;
 	double UNI_threshold = 5e-06;
 
-	//for (int i = 1; i < argc; i++)
-	//{
-	//	if (!strcmp(argv[i],"-geno")) {
-	//		try {
-	//			geno_path = argv[++i];
-	//		}
-	//		catch (...) {
-	//			std::cout << "check your genotype data file path\n";
-	//			return 0;
-	//		}
-	//	}
-	//	else if (!strcmp(argv[i], "-stat")) {
-	//		try {
-	//			stat_path = argv[++i];
-	//		}
-	//		catch (...) {
-	//			std::cout << "check your statistic data file path\n";
-	//			return 0;
-	//		}
-	//	}
-	//	else if (!strcmp(argv[i], "-sim")) {
-	//		try {
-	//			std::string temp  = argv[++i];
-	//			if (!isNumber(temp)) { throw temp;}
-	//			simNum = std::stoi(temp);
-	//		}catch (...) {
-	//			std::cout << "check your parameter simulation count\n";
-	//			return 0;
-	//		}
-	//	}
-	//	else if (!strcmp(argv[i], "-size")) {
-	//		try {
-	//			std::string temp = argv[++i];
-	//			if (!isNumber(temp)) { throw temp; }
-	//			sub_size = std::stoi(temp);
-	//		}catch (...) {
-	//			std::cout << "check your parameter sub size\n";
-	//			return 0;
-	//		}
-	//	}
-	//	else if (!strcmp(argv[i], "-mode")) {
-	//		try {
-	//			mode = std::stoi(argv[++i]);
-	//			if (!(mode == 0 || mode == 1 || mode == 2)) { throw mode; }
-	//		}
-	//		catch (...) {
-	//			std::cout << "select sampling mode 1 or 2";
-	//			return 0;
-	//		}
-	//	}
-	//}
+	for (int i = 1; i < argc; i++)
+	{
+		if (!strcmp(argv[i],"-geno")) {
+			try {
+				geno_path = argv[++i];
+			}
+			catch (...) {
+				std::cout << "check your genotype data file path\n";
+				return 0;
+			}
+		}
+		else if (!strcmp(argv[i], "-stat")) {
+			try {
+				stat_path = argv[++i];
+			}
+			catch (...) {
+				std::cout << "check your statistic data file path\n";
+				return 0;
+			}
+		}
+		else if (!strcmp(argv[i], "-sim")) {
+			try {
+				std::string temp  = argv[++i];
+				if (!isNumber(temp)) { throw temp;}
+				simNum = std::stoi(temp);
+			}catch (...) {
+				std::cout << "check your parameter simulation count\n";
+				return 0;
+			}
+		}
+		else if (!strcmp(argv[i], "-size")) {
+			try {
+				std::string temp = argv[++i];
+				if (!isNumber(temp)) { throw temp; }
+				sub_size = std::stoi(temp);
+			}catch (...) {
+				std::cout << "check your parameter sub size\n";
+				return 0;
+			}
+		}
+		else if (!strcmp(argv[i], "-mode")) {
+			try {
+				mode = std::stoi(argv[++i]);
+				if (!(mode == 0 || mode == 1 || mode == 2)) { throw mode; }
+			}
+			catch (...) {
+				std::cout << "select sampling mode 1 or 2";
+				return 0;
+			}
+		}
+	}
+
+	//parameter check
+	if (geno_path == "none" && ld_path == "none") { // no geno & ld 
+		std::cout << "Need ld or genotype data to analyze" << std::endl;
+		exit(1);
+	}
+	else if (stat_path == "none") {
+		std::cout << "Need stat data to analyze" << std::endl;
+	}
+	else if (geno_path == "none" && ld_path != "none" && mode != 0) { // must use mode 0
+		mode = 0;
+		std::cout << "there is no genotype data, change mode 0" << std::endl;
+	}
+	else if (simNum < 1000) {
+		std::cout << "The number of samples is too small. set the count to 1000" << std::endl;
+		simNum = 1000;
+	}
+	else if (sub_size < 30) {
+		std::cout << "subsize is too small. set subsize to 30" << std::endl;
+		sub_size = 30;
+	}
+	else if (sub_size > 100) {
+		std::cout << "subsize is too big. set subsize to 100" << std::endl;
+	}
 
 	std::cout << "parameters check\n";
 	std::cout << "geno path:" << geno_path << "\n";
 	std::cout << "stat path:" << stat_path << "\n";
+	std::cout << "ld   path:" << ld_path << "\n";
 	std::cout << "mode number:" << mode << "\n";
 	std::cout << "simulation count:" << simNum << "\n";
 	std::cout << "max Casual snp count:" << maxCausal_SNP << "\n";
 
 	std::clock_t start = std::clock();
 
-
 	Mars_cpp M(geno_path, stat_path, ld_path, simNum, NCP, gamma, sub_size, maxCausal_SNP, mode, UNI_threshold);
 	M.run();
-	std::cout << "????" << std::endl;
 	double duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
 	std::cout << "running time = " << duration << " secs\n";
 

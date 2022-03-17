@@ -76,9 +76,11 @@ private:
 	double alt_pvalue;
 	double baseValue;
 
-	std::vector<std::pair<std::string, double>> GS;
+	std::vector<std::pair<std::string, double>> GS; // gene stat
+	std::vector<std::pair<int, double>> OS; // only Stat
 
 	Eigen::MatrixXd sigmaMatrix;
+	Eigen::MatrixXd Geno_all_sigmaMatrix;
 	Eigen::MatrixXd Geno_LD;
 	Eigen::MatrixXd Geno_part;
 	Eigen::MatrixXd Geno_all;
@@ -90,7 +92,7 @@ public:
 	std::vector<std::pair<double, std::vector<std::pair<int, double>>>> WBS;
 
 
-	Mars_cpp(std::string Geno, std::string Stat, std::string ld, int simNum_, double NCP_, double gamma_, int subsize,int maxCausal_SNP,int mode_, double UNI_threshold_);
+	Mars_cpp(std::string Geno, std::string Stat, std::string ld, int simNum_, double NCP_, double gamma_, int subsize, int maxCausal_SNP, int mode_, double UNI_threshold_);
 
 	int nextBinary(int* data, int size);
 	int count_string_col(std::string str);
@@ -100,7 +102,7 @@ public:
 	double fastLikelihood(int* configure, double* stat);
 	double fracdmvnorm(Eigen::MatrixXd Z, Eigen::MatrixXd mean, Eigen::MatrixXd R, Eigen::MatrixXd diagC);
 	double dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat);
-	double dmvnorm_2(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat); //한개씩 계산댐.
+	double dmvnorm_2(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat); //
 
 	long int fact(int n);
 	long int nCr(int n, int r);
@@ -109,6 +111,7 @@ public:
 	Eigen::MatrixXd generateLD(Eigen::MatrixXd& mat);
 
 	Eigen::MatrixXd read_mat(std::vector<std::pair<std::string, double>> X, int row, int start_number);
+	Eigen::MatrixXd read_mat(std::string ld, int row, int col);
 	Eigen::MatrixXd rmvnorm_(int simulation_Number, Eigen::VectorXd mean, Eigen::MatrixXd covar);
 
 	std::vector<std::vector<std::pair<int, double>>> normal_sampling(int simNum, int topNum);
@@ -120,8 +123,10 @@ public:
 	//void makeSubSigma(double* snp, double* sigma, int subSize, int sampleSize);
 
 	void makeSigmaPositiveSemiDefinite(Eigen::MatrixXd& mat);
-//	void makeSigmaPositiveSemiDefinite(double* sigma, int size);
+	//	void makeSigmaPositiveSemiDefinite(double* sigma, int size);
 	void read_input_file(std::string Geno, std::string Stat);
+	void read_input_file(std::string Stat);
+
 	void computeLRT(double* stat); // with LD
 	void run();
 
@@ -134,4 +139,3 @@ public:
 
 bool cmp_str_double(std::pair<std::string, double> left, std::pair<std::string, double> right);
 bool cmp_int_double(std::pair<int, double> left, std::pair<int, double> right);
-
