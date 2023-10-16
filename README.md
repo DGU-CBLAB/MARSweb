@@ -1,6 +1,6 @@
-# Mars_p
-NICE Renew
-(other features such as GAMMA, Multitrans will be updated)
+# MarsNet
+c++ version of MARS(made by Jong Wha J. Joo)
+MARS paper -> https://www.biorxiv.org/content/10.1101/498360v1
 
 # Setup using Docker image
 1. cat Docker image
