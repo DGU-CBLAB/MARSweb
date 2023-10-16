@@ -1,7 +1,7 @@
 # MarsNet
 
 c++ version of MARS(made by Jong Wha J. Joo)<br> 
-MARS paper -> https://www.biorxiv.org/content/10.1101/498360v1
+Original MARS paper -> https://www.biorxiv.org/content/10.1101/498360v1
 
 # Setup using Docker image
 1. cat Docker image<br>
@@ -17,38 +17,30 @@ cat MarsNet.tar_* >> MarsNet.tar
 docker load -i MarsNet.tar
 docker run -v "data_path":/data --rm marsnet /MarsNet/MarsNet -geno /data/"yourdata_geno" -stat /data/"yourdata_stat" -sim 10000 -mode 1
 ```
-3. Check NICER using web
-```
-Quick link: http://localhost:8080
-```
+
 # Using G++ Compiler
-1. Unzip Eigen Library
+1. Unzip Eigen Library 
 ```
-sudo chmod -c 777 ./NICER/ -R
-sudo yum install ld-linux.so.2
-sudo yum install epel-release
+cd MarsNet
+unzip Eigen.zip -d Eigen
 ```
-2. install R language
+2. Install boost library 
 ```
-sudo yum install R
+wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.gz
+tar -zxvf boost_1_74_0.tar.gz
+cd boost_1_74_0
+./bootstrap.sh
+./b2
 ```
-3. install R 'qqman' package
+3. Compile
+```
+g++ -O2 -DNDEBUG -std=c++11 -I ./Eigen/ ./Mars_cpp.cpp ./Mars_main.cpp -o MarsNet -I ./boost_1_74_0 
+```
+4. Run
 ``` 
-R command : install.packages('qqman')
+./MarsNet -geno ./exam_geno -stat ./exam_stat -sim 10000 -mode 1
 ```
-- Using Eclipse
-```
-add all apache/lib/*.jar to the project
-```
-4. Change Directory Settings
-
-at
-> NICER/NICER/src/main/Setup.java 
-
-change
-> final static String mainDir ="**set NICER folder directory here**";
-
-# For Trouble Shooting
-a. When NICE/t_test_static doesn't work!!
-
-  use following command to allow execution : sudo chmod -c 777 ./NICE/t_test_static
+5. Options
+|geno|||
+|stat||
+|||
