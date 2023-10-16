@@ -1,28 +1,28 @@
 # MarsNet
-c++ version of MARS(made by Jong Wha J. Joo)
+
+c++ version of MARS(made by Jong Wha J. Joo)<br> 
 MARS paper -> https://www.biorxiv.org/content/10.1101/498360v1
 
 # Setup using Docker image
-1. cat Docker image
-nicer_centos.tar file should be created after these commands
+1. cat Docker image<br>
+MarsNet.tar file should be created after these commands
 ```
 cd docker/
-cat nicer_centos.tar* >> nicer_centos.tar
+cat MarsNet.tar_* >> MarsNet.tar
 ```
 2. Install Docker
 
-3. Run NICER using Docker
+3. Run MarsNet using Docker
 ```
-docker load -i nicer_centos.tar
-docker run --priviledged -d -p 8080:8080 nicer_centos init
-docker exec -it containername
+docker load -i MarsNet.tar
+docker run -v "data_path":/data --rm marsnet /MarsNet/MarsNet -geno /data/"yourdata_geno" -stat /data/"yourdata_stat" -sim 10000 -mode 1
 ```
 3. Check NICER using web
 ```
 Quick link: http://localhost:8080
 ```
-# Setup using Eclipse(on Linux)
-1. Basic instructions
+# Using G++ Compiler
+1. Unzip Eigen Library
 ```
 sudo chmod -c 777 ./NICER/ -R
 sudo yum install ld-linux.so.2
