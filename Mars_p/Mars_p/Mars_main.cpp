@@ -10,13 +10,14 @@ int main(int argc, char* argv[]) { // interface 力累 int argc, char* argv[]
 	std::string geno_path = "none";
 	std::string stat_path = "none";
 	std::string ld_path = "none";
-
+	std::string set_name = "none";
 	
 	// default value
 	int simNum = 1000;
 	int sub_size = 50;
 	int maxCausal_SNP = 2;
-	int mode = 0; //0 is normal MARS, 1 is basic sampling, 2 is importance sampling
+	int mode = 1; //0 is normal MARS, 1 is basic sampling, 2 is importance sampling
+	int input_type = 0; // 0 is local, 1 is download from web_server
 
 	double NCP = 5.7;
 	double gamma = 0.01;
@@ -72,6 +73,39 @@ int main(int argc, char* argv[]) { // interface 力累 int argc, char* argv[]
 				return 0;
 			}
 		}
+		else if (!strcmp(argv[i], "-threshold")) { // fix it later
+			try {
+				std::string temp = argv[++i];
+			//	if (!isNumber(temp)) { throw temp; }
+				UNI_threshold = std::stof(temp);
+			}
+			catch (...) {
+				std::cout << "check your parameter threshold\n";
+				return 0;
+			}
+		}
+		else if (!strcmp(argv[i], "-set_name")) { // fix it later
+			try {
+				std::string temp = argv[++i];
+				if (temp == "") { throw temp; }
+				set_name = temp;
+			}
+			catch (...) {
+				std::cout << "check your parameter set_name\n";
+				return 0;
+			}
+		}
+		else if (!strcmp(argv[i], "-web")) { // fix it later
+			try {
+				std::string temp = argv[++i];
+				if (temp == "") { throw temp; }
+				input_type = std::stoi(temp);
+			}
+			catch (...) {
+				std::cout << "check your parameter set_name\n";
+				return 0;
+			}
+		}
 	}
 
 	//parameter check
@@ -105,10 +139,10 @@ int main(int argc, char* argv[]) { // interface 力累 int argc, char* argv[]
 	std::cout << "mode number:" << mode << "\n";
 	std::cout << "simulation count:" << simNum << "\n";
 	std::cout << "max Casual snp count:" << maxCausal_SNP << "\n";
-
+	
 	std::clock_t start = std::clock();
 
-	Mars_cpp M(geno_path, stat_path, ld_path, simNum, NCP, gamma, sub_size, maxCausal_SNP, mode, UNI_threshold);
+	Mars_cpp M(geno_path, stat_path, ld_path, simNum, NCP, gamma, sub_size, maxCausal_SNP, mode, UNI_threshold, set_name, input_type);
 	M.run();
 	double duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
 	std::cout << "running time = " << duration << " secs\n";
@@ -120,8 +154,7 @@ int main(int argc, char* argv[]) { // interface 力累 int argc, char* argv[]
 }
 
 
-bool isNumber(const std::string& str)
-{
+bool isNumber(const std::string& str){
 	for (char const& c : str) {
 		if (std::isdigit(c) == 0) return false;
 	}

@@ -62,6 +62,7 @@ private:
 	std::atomic<int> LRT_count;
 	std::atomic<int> pvalue_count;
 	int th_num;
+	int input_type;
 
 	double* postValues;
 	double* histValues;
@@ -75,6 +76,8 @@ private:
 	double alt_LRTscore;
 	double alt_pvalue;
 	double baseValue;
+
+	std::string set_name;
 
 	std::vector<std::pair<std::string, double>> GS; // gene stat
 	std::vector<std::pair<int, double>> OS; // only Stat
@@ -92,7 +95,7 @@ public:
 	std::vector<std::pair<double, std::vector<std::pair<int, double>>>> WBS;
 
 
-	Mars_cpp(std::string Geno, std::string Stat, std::string ld, int simNum_, double NCP_, double gamma_, int subsize, int maxCausal_SNP, int mode_, double UNI_threshold_);
+	Mars_cpp(std::string Geno, std::string Stat, std::string ld, int simNum_, double NCP_, double gamma_, int subsize, int maxCausal_SNP, int mode_, double UNI_threshold_,std::string set_name_, int input_type_);
 
 	int nextBinary(int* data, int size);
 	int count_string_col(std::string str);

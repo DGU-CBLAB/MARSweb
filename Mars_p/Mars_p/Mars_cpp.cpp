@@ -1,6 +1,6 @@
 #include "Mars_cpp.h"
 
-Mars_cpp::Mars_cpp(std::string Geno, std::string Stat, std::string ld,int simNum_, double NCP_, double gamma_, int sub_size, int maxCausal_SNP, int mode_, double UNI_threshold_) {
+Mars_cpp::Mars_cpp(std::string Geno, std::string Stat, std::string ld,int simNum_, double NCP_, double gamma_, int sub_size, int maxCausal_SNP, int mode_, double UNI_threshold_, std::string set_name_, int input_type_) {
 	subsize = sub_size; //default = 50;
 	maxCausalSNP = maxCausal_SNP;
 	simNum = simNum_;
@@ -10,63 +10,92 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat, std::string ld,int simNum
 	UNI_threshold = UNI_threshold_;
 	baseValue = 0.0;
 	sigmaMatrix.resize(subsize, subsize);
+	set_name = set_name_;
+	input_type = input_type_;
+
 	//*** don't give LD matrix
 	if (Geno != "none") {
 		read_input_file(Geno, Stat); // Geno and Stat into GS var 
 		snpCount = GS.size();
+		if (snpCount == 0) {
+			std::cout << "there is no variable in data" << std::endl;
+			return;
+		}
+		else if (snpCount < subsize) {
+			subsize = snpCount;
+			sigmaMatrix.resize(subsize, subsize);
+		}
 		stat = new double[subsize];
 		for (int i = 0; i < subsize; i++) {
 			stat[i] = GS[i].second;
 		}
 		Geno_all = read_mat(GS, snpCount, 1);
-	}
+		if (mode == 0) {
+	//		subsize = snpCount;
+			Geno_part = read_mat(GS, subsize, 1);
+			std::cout << "mode:0 - using normal sampling\n";
+			if (Geno != "none") {
+				Geno_all_sigmaMatrix = generateLD(Geno_all);
+				sigmaMatrix = generateLD(Geno_part);
+			}
+			else {
+				for (int j = 0; j < subsize; j++) {
+					for (int k = 0; k < subsize; k++) {
+						sigmaMatrix(j, k) = Geno_all_sigmaMatrix(OS[j].first, OS[k].first);
+					}
+				}
+			}
+			std::cout << "sigmaMatrix size is " << Geno_all_sigmaMatrix.rows() << "x" << Geno_all_sigmaMatrix.cols() << "\n";
+			std::cout << "LD calculation complete\n";
+		}
+		else if (mode == 1 || mode == 2){
+			Geno_part = read_mat(GS, subsize, 1);
+			sigmaMatrix = generateLD(Geno_part);
+			std::cout << "LD calculation complete\n";
+		}
+		else {
+			std::cout << "The mode number isn't correct. mode: " << mode << "\n";
+			return;
+		}
+		//alt
+		alt_pvalue = computePvalue(GS[0].second);
+
+		std::cout << "alteration pvalue is " << computePvalue(GS[0].second) << std::endl;
+		computeLRT(stat);
+		alt_LRTscore = LRTscore;
+		std::cout << "alteration LRTscore is " << LRTscore << std::endl;
+		pvalue_count = 0; LRT_count = 0;
+	} 	//***  don't give LD matrix
 	else {
 		read_input_file(Stat); // Geno and Stat into GS var 
 		snpCount = OS.size();
+		if (snpCount == 0) {
+			std::cout << "there is no variable in data" << std::endl;
+			return;
+		}
+		else if (snpCount < subsize) {
+			subsize = snpCount;
+			sigmaMatrix.resize(subsize, subsize);
+		}
 		stat = new double[subsize];
 		for (int i = 0; i < subsize; i++) {
 			stat[i] = OS[i].second;
 		}
 		Geno_all_sigmaMatrix = read_mat(ld, snpCount, snpCount);
-	}
-	if (mode == 0) {
-//		subsize = snpCount;
-		Geno_part = read_mat(GS, subsize, 1);
-		std::cout << "mode:0 - using normal sampling\n";
-		if (Geno != "none") {
-			Geno_all_sigmaMatrix = generateLD(Geno_all);
-			sigmaMatrix = generateLD(Geno_part);
-		}
-		else {
-			for (int j = 0; j < subsize; j++) {
-				for (int k = 0; k < subsize; k++) {
-					sigmaMatrix(j, k) = Geno_all_sigmaMatrix(OS[j].first, OS[k].first);
-				}
+
+		for (int j = 0; j < subsize; j++) {
+			for (int k = 0; k < subsize; k++) {
+				sigmaMatrix(j, k) = Geno_all_sigmaMatrix(OS[j].first, OS[k].first);
 			}
 		}
-		std::cout << "sigmaMatrix size is " << Geno_all_sigmaMatrix.rows() << "x" << Geno_all_sigmaMatrix.cols() << "\n";
-		std::cout << "LD calculation complete\n";
 
+		alt_pvalue = computePvalue(OS[0].second);
+		std::cout << "alteration pvalue is " << computePvalue(OS[0].second) << std::endl;
+		computeLRT(stat);
+		alt_LRTscore = LRTscore;
+		std::cout << "alteration LRTscore is " << LRTscore << std::endl;
+		pvalue_count = 0; LRT_count = 0;
 	}
-	else if (mode == 1 || mode == 2){
-		Geno_part = read_mat(GS, subsize, 1);
-		sigmaMatrix = generateLD(Geno_part);
-		std::cout << "LD calculation complete\n";
-	}
-	else {
-		std::cout << "The mode number isn't correct. mode: " << mode << "\n";
-		return;
-	}
-
-	//alt
-	alt_pvalue = computePvalue(GS[0].second);
-	std::cout << "alteration pvalue is " << computePvalue(GS[0].second) << std::endl;
-	computeLRT(stat);
-	alt_LRTscore = LRTscore;
-	std::cout << "alteration LRTscore is " << LRTscore << std::endl;
-	pvalue_count = 0; LRT_count = 0;
-
-	//***  don't give LD matrix
 };
 
 int Mars_cpp::nextBinary(int* data, int size) { // 경우의수 출력하는 함수인듯.
@@ -168,6 +197,7 @@ void Mars_cpp::computeLRT(double* stat) { //with genotype
 		if (i == 0) { 
 			allZero_likelihood = tmp_likelihood;
 		}//save allzero likelihood
+
 		sumLikelihood += tmp_likelihood;
 		num = nextBinary(configure, subsize);
 	}//cout<<"here="<<sigmaMatrix(1,0)<<endl;
@@ -204,12 +234,14 @@ double Mars_cpp::fastLikelihood(int* configure, double* stat) {
 		Zcc(i, 0) = stat[causalIndex[i]];
 		diagC(i, i) = NCP;
 	}
+	//std::cout << "sigmaMatrix \n" << sigmaMatrix<< std::endl;
 
 	while (Rcc.determinant() <= 0.01) {
 		Eigen::MatrixXd toAdd(causalCount, causalCount);
 		toAdd.setIdentity(); // Identity
 		Rcc = Rcc + 0.1 * toAdd;
 	}
+
 	return fracdmvnorm(Zcc, mean, Rcc, diagC);
 }
 double Mars_cpp::fracdmvnorm(Eigen::MatrixXd Z, Eigen::MatrixXd mean, Eigen::MatrixXd R, Eigen::MatrixXd diagC) {
@@ -289,19 +321,23 @@ Eigen::MatrixXd Mars_cpp::cal_cor(Eigen::MatrixXd& mat) {
 Eigen::MatrixXd Mars_cpp::generateLD(Eigen::MatrixXd& mat) {
 	Eigen::MatrixXd cal_LD = cal_cor(mat);
 	makeSigmaPositiveSemiDefinite(cal_LD);
+
 	return cal_LD;
 }
 
 void Mars_cpp::makeSigmaPositiveSemiDefinite(Eigen::MatrixXd& mat) {
 
 	Eigen::MatrixXd iden(mat.rows(), mat.cols()); iden.setIdentity();
-	while (mat.lu().determinant() <= 0) {
+	while (mat.lu().determinant() < 0) {
 		mat = mat + 0.1 * iden;
 	}
 }
 void Mars_cpp::read_input_file(std::string Geno, std::string Stat) {
 	std::ifstream geno(Geno);
 	std::ifstream stat(Stat);
+
+	std::stringstream geno_stream;
+	std::stringstream stat_stream;
 
 	//Error handling
 	if (geno.is_open() == false) {
@@ -317,6 +353,17 @@ void Mars_cpp::read_input_file(std::string Geno, std::string Stat) {
 	double stemp = 0.0;
 	std::string gtemp = "";
 
+	std::string gtemp_ = "";
+	std::string gtemp_stream = "";
+	std::string stemp_ = "";
+	std::string stemp_stream = "";
+
+	std::string g_snp_name = "";
+	std::string g_ind_snp = "";
+
+	std::string s_pvalue = "";
+	std::string s_beta = "";
+
 	while (!stat.eof() || !geno.eof()) {
 		if (stat.eof()) {
 			std::cout << "More Genotype data than Statistics. Pleas check input files\n";
@@ -326,7 +373,34 @@ void Mars_cpp::read_input_file(std::string Geno, std::string Stat) {
 			std::cout << "More Statistics than Genotype data. Pleas check input files\n";
 			exit(1);
 		}
-		stat >> stemp; getline(geno, gtemp);
+		if (input_type == 0) { // stat file has only zscore
+			stat >> stemp; getline(geno, gtemp);
+		}
+		else { // input_type == 1 // geno file type is traw(from plink) & 
+			gtemp = "";
+			getline(geno, gtemp_);  getline(stat, stemp_);
+			geno_stream.str(gtemp_); stat_stream.str(stemp_);
+			//snp
+			geno_stream >> gtemp_stream >> g_snp_name >> gtemp_stream >> gtemp_stream >> gtemp_stream >> gtemp_stream;
+			gtemp = gtemp + g_snp_name;
+			while (geno_stream >> g_ind_snp) {
+				gtemp = gtemp + " " + g_ind_snp;
+			}
+			//stat
+			stat_stream >> stemp_stream >> stemp_stream >> stemp_stream >> s_beta >> s_pvalue;
+			double f_pvalue = std::stod(s_pvalue);
+			double f_beta = std::stod(s_beta);
+			
+			if (f_pvalue == 1) {
+				f_pvalue = 0.99999999999;
+			}
+			stemp = std::abs(boost::math::erfc_inv(f_pvalue)) * std::sqrt(2);
+			if (f_beta < 0) {
+				stemp = -1 * stemp;
+			}
+			geno_stream.clear(); stat_stream.clear();
+		}
+
 		if (gtemp != "") {
 			GS.push_back(std::pair<std::string, double>(gtemp, stemp));
 		}
@@ -340,6 +414,12 @@ void Mars_cpp::read_input_file(std::string Geno, std::string Stat) {
 void Mars_cpp::read_input_file(std::string Stat) {
 	int count = 0;
 	std::ifstream stat(Stat);
+	
+	std::string stemp_ = "";
+	std::stringstream stat_stream;
+	std::string stemp_stream = "";
+	std::string s_pvalue = "";
+	std::string s_beta = "";
 
 	//Error handling
 	if (stat.is_open() == false) {
@@ -353,7 +433,26 @@ void Mars_cpp::read_input_file(std::string Stat) {
 	
 	while (!stat.eof()) {
 
-		stat >> stemp;
+		if (input_type == 0) {
+			stat >> stemp;
+		}
+		else { // input_type == 1 //
+			getline(stat, stemp_);
+			stat_stream.str(stemp_);
+			//stat
+			stat_stream >> stemp_stream >> stemp_stream >> stemp_stream >> s_beta >> s_pvalue;
+			double f_pvalue = std::stod(s_pvalue);
+			double f_beta = std::stod(s_beta);
+
+			if (f_pvalue == 1) {
+				f_pvalue = 0.99999999999;
+			}
+			stemp = std::abs(boost::math::erfc_inv(f_pvalue)) * std::sqrt(2);
+			if (f_beta < 0) {
+				stemp = -1 * stemp;
+			}
+		}
+		stat_stream.clear();
 		OS.push_back(std::pair<int, double>(count, stemp));
 		count++;
 	}
@@ -379,11 +478,14 @@ void Mars_cpp::run() { // Genotype data exist
 			computeLRT(stat);
 			if (LRTscore > alt_LRTscore) { LRT_count++; }
 		}
-		std::cout << "pvalue_LRT = " << (double)LRT_count / simNum << std::endl;
-		std::cout << "pvalue_UNI = " << (double)pvalue_count / simNum << std::endl;
+		std::cout << "pvalue_LRT pvalue_UNI" << std::endl;
+		std::cout << (double)LRT_count / simNum << " " << (double)pvalue_count / simNum << std::endl;
 	}
 	else if (mode == 1) {
 		BS = fast_sampling(simNum, subsize, Geno_all);
+		/*for test*/
+		std::ofstream null_samples(set_name);
+		null_samples << "LRTscore" << "\t" << "compute_pvalue" << "\t" << "ln(lrt)" << std::endl;
 		for (int i = 0; i < simNum; i++) { //simNum
 			Eigen::MatrixXd BS_Geno(subsize, Geno_all.cols());
 			for (int j = 0; j < subsize; j++) {
@@ -392,18 +494,19 @@ void Mars_cpp::run() { // Genotype data exist
 			}
 
 			sigmaMatrix = generateLD(BS_Geno);
-			if (computePvalue(stat[0]) < alt_pvalue) { pvalue_count++; }
+			double compute_pvalue = computePvalue(stat[0]);
+			if (compute_pvalue < alt_pvalue) { pvalue_count++; }
 			computeLRT(stat);
-//			std::cout << i << "th lrt_score: " << LRTscore << std::endl;
 			if (LRTscore > alt_LRTscore) { LRT_count++; }
+			null_samples << LRTscore << "\t" << compute_pvalue << "\t" << std::log(LRTscore) << std::endl;
 		}
-		std::cout << "pvalue_LRT = " << (double)LRT_count / simNum << std::endl;
-		std::cout << "pvalue_UNI = " << (double)pvalue_count / simNum << std::endl;
+		std::cout << "pvalue_LRT pvalue_UNI" << std::endl;
+		std::cout << (double)LRT_count / simNum  << " " << (double)pvalue_count / simNum << std::endl;
+		null_samples.close();
 	}
 	else if (mode == 2) {
 		WBS = importance_sampling(simNum, subsize, Geno_all);
 		double wsum_1 = 0.0;   //for pvalue threshold
-		double wsum_2 = 0.0;   //for UNI pvalue
 		double wsum_3 = 0.0;   //for UNI LRT value
 		double sum = 0.0;
 		for (int i = 0; i < simNum; i++) { //simNum
@@ -414,23 +517,20 @@ void Mars_cpp::run() { // Genotype data exist
 			}
 			sigmaMatrix = generateLD(BS_Geno);
 			double nullUNI_pvalue = computePvalue(stat[0]);
-			std::cout << "Importance Sampling pvalue is " << computePvalue(stat[0]) << std::endl;
-			std::cout << WBS[i].first << std::endl;;
+//			std::cout << "Importance Sampling pvalue is " << computePvalue(stat[0]) << std::endl;
+//			std::cout << WBS[i].first << std::endl;;
 
 			if (nullUNI_pvalue < UNI_threshold) { wsum_1 += WBS[i].first; }
-			if (nullUNI_pvalue < alt_pvalue) { wsum_2 += WBS[i].first; }
 			computeLRT(stat);
 			//std::cout << "Importance Sampling LRTscore is " << LRTscore << std::endl;
 			if (LRTscore > alt_LRTscore) { wsum_3 += WBS[i].first; }
 			sum += WBS[i].first;
 		}
-		std::cout << sum << " " << wsum_1 << " " << wsum_2 << " " << wsum_3 << "\n";
-		std::cout << "LRT_pvalue = " << wsum_3 << "/" << sum << "\n";
-		std::cout << "UNI_pvalue = " << wsum_2 << "/" << sum << "\n";
-		std::cout << "UNI_threshold = " << wsum_1 << "/" << sum << "\n";
+		std::cout << "weight D? weight C"<< "\n";
+		std::cout << wsum_3/sum << " " << wsum_1/sum << "\n";
 	}
 	else {
-		std::cout << "mode error, input 0 or 1" << std::endl;
+		std::cout << "mode error, please input right mode number (0, 1, 2)" << std::endl;
 		exit(1);
 	}
 }
@@ -453,13 +553,40 @@ Eigen::MatrixXd Mars_cpp::read_mat(std::vector<std::pair<std::string, double>> X
 	std::cout << "col = " << col << std::endl;
 	Eigen::MatrixXd ret_mat = Eigen::MatrixXd(row, col);
 	for (int i = 0; i < row; i++) { //row
+		double missing_value = 0.0;
+		double count = 0;
+		double sum = 0;
+
+
 		stream.str(X[i].first);
 		for (int j = 0; j < start_number; j++) {
 			stream >> token;
 		}
 		for (int j = 0; j < col; j++) { //col
 			stream >> token;
-			ret_mat(i, j) = std::stold(token);
+			if (token == "NA") {
+				//pass	
+			}
+			else {
+				sum = sum + std::stold(token);
+				count++;
+			}
+		}
+		stream.clear();
+		missing_value = sum / count;
+		stream.str(X[i].first);
+
+		for (int j = 0; j < start_number; j++) {
+			stream >> token;
+		}
+		for (int j = 0; j < col; j++) { //col
+			stream >> token;
+			if (token != "NA") {
+				ret_mat(i, j) = std::stold(token);
+			}
+			else {
+				ret_mat(i, j) = missing_value;
+			}
 		}
 		stream.clear();  //for coursor reset
 	}
@@ -472,17 +599,38 @@ Eigen::MatrixXd Mars_cpp::read_mat(std::string ld, int row, int col) {
 	std::string token;
 	std::stringstream stream;
 	Eigen::MatrixXd ret_mat = Eigen::MatrixXd(row, col);
-
 	if (input_file.is_open() == false) {
 		std::cout << ld << " is not correct path.\n";
 		exit(1);
 	}
 	for (int i = 0; i < row; i++) { //row
 		std::getline(input_file, read_buffer);
+		double missing_value = 0.0;
+		double count = 0;
+		double sum = 0;
+
 		stream.str(read_buffer);
 		for (int j = 0; j < col; j++) { //col
 			stream >> token;
-			ret_mat(i, j) = std::stold(token);
+			if (token == "NA") {
+				//pass	
+			}
+			else {
+				sum = sum + std::stold(token);
+				count++;
+			}
+		}
+		stream.clear();
+		missing_value = sum / count;
+		stream.str(read_buffer);
+		for (int j = 0; j < col; j++) { //col
+			stream >> token;
+			if (token != "NA") {
+				ret_mat(i, j) = std::stold(token);
+			}
+			else {
+				ret_mat(i, j) = missing_value;
+			}
 		}
 		stream.clear();  //for coursor reset
 	}
@@ -503,7 +651,6 @@ std::vector<std::vector<std::pair<int, double>>> Mars_cpp::normal_sampling(int s
 		std::sort(NS_element.begin(), NS_element.end(), cmp_int_double);
 		NS_element.resize(topNum); NS.push_back(NS_element);
 	}
-	
 	//	Sall_out.close();
 	return NS;
 }
@@ -539,9 +686,10 @@ std::vector<std::vector<std::pair<int, double>>> Mars_cpp::fast_sampling(int sim
 	Eigen::MatrixXd null_covar(Geno_cols, Geno_cols); null_covar.setIdentity();
 
 	Eigen::MatrixXd Sall = rmvnorm_(simNum, null_mean, null_covar); // Geno_cols x simNum
-	//std::ofstream Sall_out("basic_Sal.txt");
-	//Sall_out << Sall << std::endl;
+//	std::ofstream Sall_out("Sampling.txt");
+
 	Eigen::MatrixXd Sall_new = (xs_scale / std::sqrt(Geno_cols)) * Sall;
+//	Sall_out << Sall_new << std::endl;
 
 	std::vector< std::vector<std::pair<int, double>>> BS;
 	for (int i = 0; i < simNum; i++) {
