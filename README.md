@@ -40,7 +40,3 @@ g++ -O2 -DNDEBUG -std=c++11 -I ./Eigen/ ./Mars_cpp.cpp ./Mars_main.cpp -o MarsNe
 ``` 
 ./MarsNet -geno ./exam_geno -stat ./exam_stat -sim 10000 -mode 1
 ```
-5. Options
-|geno|||
-|stat||
-|||
