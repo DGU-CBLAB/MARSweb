@@ -1,4 +1,4 @@
-# MarsNet
+# MARSweb
 
 c++ version of MARS(made by Jong Wha J. Joo)<br> 
 Original MARS paper -> https://www.biorxiv.org/content/10.1101/498360v1
