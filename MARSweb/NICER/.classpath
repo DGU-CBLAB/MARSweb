@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="module" value="true"/>
+			<attribute name="owner.project.facets" value="java"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/websocket-api.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-websocket.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-util-scan.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-util.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-jni.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-jdbc.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-i18n-zh-CN.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-i18n-ru.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-i18n-pt-BR.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-i18n-ko.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-i18n-ja.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-i18n-fr.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-i18n-es.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-i18n-de.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-i18n-cs.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-dbcp.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-coyote.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/tomcat-api.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/rt.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/mysql-connector-java-5.1.39-bin.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/jsp-api.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/javax.mail.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/java-getopt-1.0.13.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/jaspic-api.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/jasper-el.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/jasper.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/gson-2.11.0.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/el-api.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/ecj-4.20.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/ecj-4.9.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/cos.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/commons-math-2.1.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/commons-io-2.6.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/colt.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/catalina-tribes.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/catalina-storeconfig.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/catalina-ssi.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/catalina-ha.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/catalina-ant.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/catalina.jar"/>
+	<classpathentry kind="lib" path="/Data/ktg/cblab_webserver/NICER-master/NICER/WebContent/WEB-INF/lib/annotations-api.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

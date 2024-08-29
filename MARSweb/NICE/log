@@ -1,0 +1,11 @@
+Arguments:  -input ./test/inputMS.txt -mvalue -mvalue_method mcmc -mcmc_sample 10000 -seed 0 -mvalue_p_thres 1.0 -mvalue_prior_sigma 0.05 -mvalue_prior_beta 1 5 -pvalue_table ./HanEskinPvalueTable.txt -output ./test/posterior.txt
+ Input File: ./test/inputMS.txt
+Output File: ./test/posterior.txt
+Log File: log
+p-value Table File: ./HanEskinPvalueTable.txt
+Number of SNPs analyzed: 1000
+Maximum number of studies: 1000
+Specified lambda for   mean effect part (default = 1.0): 1.000000
+Specified lambda for heterogeneity part (default = 1.0): 1.000000
+Newly calculated inflation factor lambda for   mean effect part: 167.679929
+Newly calculated inflation factor lambda for heterogeneity part: 19.697598

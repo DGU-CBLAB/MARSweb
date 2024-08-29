@@ -1,0 +1,45 @@
+@charset "EUC-KR";
+
+b{
+ font-size:20px;
+ font-family: 돋음;
+ font-weight:bolder;
+ color: #0BC904;
+}
+.hr2{
+ width:900px;
+ border-color: #0BC904;
+ border-width: 1px;
+ padding-left: 160px;
+}
+td{
+ font-size: 13px;
+ font-family: 돋음;
+ vertical-align: middle;
+ color: #5D5D5D;
+}
+input{
+ height:20px;
+ vertical-align: middle;
+ color: #5F00FF;
+ border-width: 2px;
+ border-color: #8C8C8C;
+ 
+}
+select,option{
+ height:23px;
+}
+.selectph1{
+ height:23px;
+ vertical-align: bottom;
+}
+.danger1{
+ color: red;
+ font-size:11px;
+ padding-left: 20px;
+}
+danger2{
+ color: red;
+ font-size:11px;
+ padding-left: 160px;
+}

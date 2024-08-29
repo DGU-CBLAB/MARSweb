@@ -1,0 +1,165 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+	<head>
+		
+		<link href="style/memberStyle.css" rel="stylesheet" type="text/css"/>
+		
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		
+    		<title>SIGN-UP AMPM</title>
+
+		<link href="css/signup_bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="css/font-awesome.min.css" media="screen" title="no title" charset="utf-8">
+		<link rel="stylesheet" href="css/signup_style.css" media="screen" title="no title" charset="utf-8">
+
+		<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    		<!--[if lt IE 9]>
+      	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+			<![endif]-->
+  	</head>
+<link href="style/memberStyle.css" rel="stylesheet" type="text/css"/>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<script type="text/javascript">
+var right=0;
+
+function regChk(){
+	 var id = document.form.id.value;
+	 var regx = /^[a-zA-Z0-9]*$/;
+	 var mail = /^[a-zA-Z0-9]*@[a-z.]*/; 
+	 var chk1= /\d/;
+	 var chk2 = /[a-z]/i;
+	 if(id.length==0 || id==null){
+	  alert("Please enter Id");
+	  return false;
+	 }
+	 if (!regx.test(id)){
+	  alert("Membership ID can only be entered in English and numbers.");
+	  document.form.id.focus();
+	  return false;
+	 }
+	 var pass = document.form.pass.value;
+	 if(pass.length<6 || pass==null){
+	  alert("Please enter your password (more than 6 characters).");
+	  return false;
+	 }
+	 if (chk1.test(pass) && chk2.test(pass)){
+	 }else{
+	  alert("The password is alphabet, number combination.");
+	  return false;
+	 }
+	 if(right == 0){
+		 alert("please check the password is the same.");
+		 return false;
+	 }
+	 var name = document.form.name.value;
+	 if(name.length==0 || name==null){
+	  alert("Please input your name.");
+	  return false;
+	 }
+	 var email1 = document.form.email1.value;
+	 var email2 = document.form.email1.value;
+	 if(email1.length==0 || email1==null){
+	  alert("Please input your email.");
+	  return false;
+	 }
+	 if (!mail.test(email1)){
+	  alert("The email is alphabet, number combination.");
+	  document.form.email1.focus();
+	  return false;
+	 }
+	 document.form.submit();
+
+}
+
+function regCancel(){
+ location.href="/hihi"; 
+}
+
+function passchk(){
+	 var pass = document.form.pass.value;
+	 var pass2 = document.form.pass2.value;
+	 if (pass2.length == 0 || pass2 == null) {
+	  document.form.chk.value = "Please input password";
+	  right =0;
+	 } else if (pass != pass2) {
+	  document.form.chk.value = "Password is not the same.";
+	  right =0;
+	 } else {   
+	  document.form.chk.value = "Password is the same.";
+	  right =1;
+	 }
+	 return;
+}
+
+function idcheck(){
+	 var id = document.form.id.value;
+	 if(id.length<1 || id==null){
+	  alert("plese check");
+	  return false;
+	 }
+	 var url = "idCheck.jsp?id=" + id;
+	 window.open(url, "get", "height = 180, width = 300");
+	}
+
+</script>
+</head>
+<body>
+<form action="/hihi/regFormProc.jsp" name="form" method="post">
+
+ <article class="container">
+		<div class="page-header">
+			<h1>Sign up</h1>
+		</div>
+		<div class="col-md-6 col-md-offset-3">
+			<div class="form-group">
+				<label for="InputId">ID</label>
+				<input type="text" class="form-control" name="id">
+                <input type="button" value="check" onclick="idcheck()">
+			</div>
+			
+			<div class="form-group">
+				<label for="InputPassword1">Password</label>
+				<input type="password" class="form-control" name="pass" placeholder="Password">
+			</div>
+			
+			<div class="form-group">
+				<label for="InputPassword2">Confirm Password</label>
+				
+				<input type="password" class="form-control" name="pass2"  onblur="passchk()" placeholder="Confirm Password">
+
+				<p class="help-block">
+      			<input type="text" style="border-width: 0px" size="20" name="chk" value="Please input password." readonly="readonly"><br><br>
+				</p>
+			</div>
+            
+			<div class="form-group">
+				<label for="username">Name</label>
+				<input type="text" class="form-control" name="name" placeholder="Input your full name">
+			</div>
+
+			<div class="form-group">
+				<label for="InputEmail">Email</label>
+				<input type="email" class="form-control" name="email1" placeholder="Input your email">
+			</div>
+			
+			<div class="form-group text-center">
+				<input type="button" value="Apply" onclick="regChk()">&nbsp;
+    			<input type="reset" value="Reset">&nbsp;
+  				<input type="button" value="Cancel" onclick="regCancel()">
+			</div>
+		</div>
+		</article>
+
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<!-- Include all compiled plugins (below), or include individual files as needed -->
+		<script src="js/signup_bootstrap.min.js"></script>
+</form>
+</body>
+</html>

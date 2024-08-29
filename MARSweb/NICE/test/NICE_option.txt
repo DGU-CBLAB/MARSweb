@@ -1,0 +1,15 @@
+-java = /usr/bin/java #System path
+-R = /u/local/apps/R/R-2.15.1-gnu/bin/R
+-NICE = ./
+
+-snp = ./test/X_rightdim.txt 
+-pheno = ./test/Y_rightdim.txt
+-pvalue = ./test/p_ttest.txt
+-out = ./test/
+
+-mvalue_method mcmc  # mvalue options
+-mcmc_sample 1000000
+-seed 0
+-mvalue_p_thres 1.0
+-mvalue_prior_sigma 0.05
+-mvalue_prior_beta 1 5

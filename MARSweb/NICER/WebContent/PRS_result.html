@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>PRS_Result</title>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<link href="https://fonts.googleapis.com/css?family=Rubik:300,400,500"
+	rel="stylesheet">
+<link rel="stylesheet" href="css/open-iconic-bootstrap.min.css">
+<link rel="stylesheet" href="css/animate.css">
+<link rel="stylesheet" href="css/owl.carousel.min.css">
+<link rel="stylesheet" href="css/owl.theme.default.min.css">
+<link rel="stylesheet" href="css/magnific-popup.css">
+<link rel="stylesheet" href="css/aos.css">
+<link rel="stylesheet" href="css/ionicons.min.css">
+<link rel="stylesheet" href="css/bootstrap-datepicker.css">
+<link rel="stylesheet" href="css/jquery.timepicker.css">
+<link rel="stylesheet" href="css/flaticon.css">
+<link rel="stylesheet" href="css/icomoon.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/tab.css">
+
+
+</head>
+<body style="background:#fff;">
+<nav
+		class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light"
+		id="ftco-navbar" data-aos="fade-down" data-aos-delay="500">
+		<div class="container" >
+			<a class="navbar-brand" href="index.html">CBLAB - Computatinal Bioinformatics Lab</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse"
+				data-target="#ftco-nav" aria-controls="ftco-nav"
+				aria-expanded="false" aria-label="Toggle navigation">
+				<span class="oi oi-menu"></span> Menu
+			</button>
+
+			<div class="collapse navbar-collapse" id="ftco-nav" style="float:left;">
+				<ul class="navbar-nav ml-auto">
+					<li class="nav-item active"><a href="index.html"
+						class="nav-link">Home</a></li>
+					<li class="nav-item"><a href="Publication.jsp" class="nav-link">Publication & Software</a></li>
+					<li class="nav-item"><a href="research.jsp" class="nav-link">Lab & Research</a></li>
+					<li class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Programs</a>
+						
+						<ul class="dropdown-menu" style="background-color:transparent;"aria-labelledby="navbarDropdownMenuLink">	
+							<li class="dropdown-item"><a href="GAMMA.html" class="nav-link">GAMMA</a></li>
+							<li class="dropdown-item"><a href="MultiTrans.html"class="nav-link">MultiTrans</a></li>
+							<li class="dropdown-item" ><a href="NICE.html" class="nav-link">NICER</a></li>
+							<li class="dropdown-item"><a href="eQTL.html" class="nav-link">eQTL_map</a></li>
+							<li class="dropdown-item"><a href="Manhattan.html" class="nav-link">Manhattan</a></li>
+							<li class="dropdown-item"><a href="Mars.html" class="nav-link">Mars</a></li>
+							<li class="dropdown-item"><a href="PrIMP.html" class="nav-link">PrIMP</a></li>
+							<li class="dropdown-item"><a href="PrIMP.html" class="nav-link">PRS</a></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+
+	<section class="ftco-cover"
+		style="background-image: url(images/mars_wallpaper3.jpg); background-size: cover; background-repeat:no-repeat;"
+		id="section-home" data-aos="fade" data-stellar-background-ratio="0.5">
+		<div class="container">
+			<div class="row align-items-center ftco-vh-75">
+				<div class="col-md-7">
+					<h1 class="ftco-heading mb-3" data-aos="fade-up"
+						data-aos-delay="500">PRS_result</h1>
+					<h2 class="h5 ftco-subheading mb-5" data-aos="fade-up"
+						data-aos-delay="600">
+
+				</div>
+			</div>
+		</div>
+	</section>
+
+
+	<br>
+	<br>
+	<div class="container" style="background:#f5f5f5;">
+		<div class="col-md-7">
+			<h1 data-aos="fade-up" data-aos-delay="500">Result</h1>
+		</div>
+
+
+		<footer class="ftco-footer ftco-bg-dark ftco-section">
+			<div class="ftco-section contact-section">
+				<div class="container">
+					<div class="row block-9">
+						<div class="col-md-6 pr-md-5" style="background-image: none;">
+								<input id="tab1" type="radio" name="tabs" value="type1"
+								checked="checked" style="display: none"> <label for="tab1"
+								data-tab="tab-1" style="padding: 15px 18px">AF</label> 
+
+							<div id="tab-1" class="tab-content current">
+								<form action="PrIMPServlet" method="post"
+									enctype="multipart/form-data">
+
+									<div class="form-group">
+										<input type="email" class="form-control" name="emailAddress"
+											placeholder="The email address to receive the results.">
+									</div>
+									<input type="text" name="tabss" value="type1"
+										style="display: none">
+									<div class="form-group">
+										<table cellspacing="100%">
+											<tr>
+												<th cellspacing="50%"><input type="text"
+													placeholder=" Upload Fasta file" disabled ></th>
+												<th><input type="file" name="Fasta_file"></th>
+											</tr>
+										</table>
+									</div>
+									<br>
+									<br>
+							</div>
+		
+						</div>
+					  	<div><img src="images/PRS_result/AF.png" width="500" height="400" /> </div>
+				</div>
+			</div>
+	<div id="readme" class="Box md js-code-block-container Box--responsive">
+
+      <div class="d-flex js-sticky js-position-sticky top-0 border-top-0 border-bottom p-2 flex-items-center flex-justify-between color-bg-primary rounded-top-2" style="position: sticky; z-index: 90; top: 0px !important;" data-original-top="0px"></div>  <!-- draw line code -->
+      				<div class="container">
+					<div class="row block-9">
+						<div class="col-md-6 pr-md-5" style="background-image: none;">
+								<input id="tab1" type="radio" name="tabs" value="type1"
+								checked="checked" style="display: none"> <label for="tab1"
+								data-tab="tab-1" style="padding: 15px 18px">Demen</label> 
+
+							<div id="tab-1" class="tab-content current">
+
+
+									<div class="form-group">
+										<input type="email" class="form-control" name="emailAddress"
+											placeholder="The email address to receive the results.">
+									</div>
+									<input type="text" name="tabss" value="type1"
+										style="display: none">
+									<div class="form-group">
+										<table cellspacing="100%">
+											<tr>
+												<th cellspacing="50%"><input type="text"
+													placeholder=" Upload Fasta file" disabled ></th>
+												<th><input type="file" name="Fasta_file"></th>
+											</tr>
+										</table>
+									</div>
+									<br>
+									<br>
+							</div>
+		
+						</div>
+					  	<div><img src="images/PRS_result/Demen.png" width="500" height="400" /> </div>
+				</div>
+			</div>
+      <div class="d-flex js-sticky js-position-sticky top-0 border-top-0 border-bottom p-2 flex-items-center flex-justify-between color-bg-primary rounded-top-2" style="position: sticky; z-index: 90; top: 0px !important;" data-original-top="0px"></div>
+      				<div class="container">
+					<div class="row block-9">
+						<div class="col-md-6 pr-md-5" style="background-image: none;">
+								<input id="tab1" type="radio" name="tabs" value="type1"
+								checked="checked" style="display: none"> <label for="tab1"
+								data-tab="tab-1" style="padding: 15px 18px">DIA</label> 
+
+							<div id="tab-1" class="tab-content current">
+
+
+									<div class="form-group">
+										<input type="email" class="form-control" name="emailAddress"
+											placeholder="The email address to receive the results.">
+									</div>
+									<input type="text" name="tabss" value="type1"
+										style="display: none">
+									<div class="form-group">
+										<table cellspacing="100%">
+											<tr>
+												<th cellspacing="50%"><input type="text"
+													placeholder=" Upload Fasta file" disabled ></th>
+												<th><input type="file" name="Fasta_file"></th>
+											</tr>
+										</table>
+									</div>
+									<br>
+									<br>
+							</div>
+		
+						</div>
+					  	<div><img src="images/PRS_result/DIA.png" width="500" height="400" /> </div>
+				</div>
+			</div>
+      
+      <div class="d-flex js-sticky js-position-sticky top-0 border-top-0 border-bottom p-2 flex-items-center flex-justify-between color-bg-primary rounded-top-2" style="position: sticky; z-index: 90; top: 0px !important;" data-original-top="0px"></div>
+      				<div class="container">
+					<div class="row block-9">
+						<div class="col-md-6 pr-md-5" style="background-image: none;">
+								<input id="tab1" type="radio" name="tabs" value="type1"
+								checked="checked" style="display: none"> <label for="tab1"
+								data-tab="tab-1" style="padding: 15px 18px">STR</label> 
+
+							<div id="tab-1" class="tab-content current">
+
+
+									<div class="form-group">
+										<input type="email" class="form-control" name="emailAddress"
+											placeholder="The email address to receive the results.">
+									</div>
+									<input type="text" name="tabss" value="type1"
+										style="display: none">
+									<div class="form-group">
+										<table cellspacing="100%">
+											<tr>
+												<th cellspacing="50%"><input type="text"
+													placeholder=" Upload Fasta file" disabled ></th>
+												<th><input type="file" name="Fasta_file"></th>
+											</tr>
+										</table>
+									</div>
+									<br>
+									<br>
+							</div>
+		
+						</div>
+					  	<div><img src="images/PRS_result/STR.png" width="500" height="400" /> </div>
+				</div>
+			</div>
+
+      <div class="d-flex js-sticky js-position-sticky top-0 border-top-0 border-bottom p-2 flex-items-center flex-justify-between color-bg-primary rounded-top-2" style="position: sticky; z-index: 90; top: 0px !important;" data-original-top="0px"></div>
+    </div>
+    
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<p></p>
+				</div>
+			</div>
+		</footer>
+	</div>
+
+	<script src="js/jquery.min.js"></script>
+	<script src="js/jquery-migrate-3.0.1.min.js"></script>
+	<script src="js/popper.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/jquery.easing.1.3.js"></script>
+	<script src="js/jquery.waypoints.min.js"></script>
+	<script src="js/jquery.stellar.min.js"></script>
+	<script src="js/owl.carousel.min.js"></script>
+	<script src="js/jquery.magnific-popup.min.js"></script>
+	<script src="js/aos.js"></script>
+	<script src="js/jquery.animateNumber.min.js"></script>
+	<script src="js/google-map.js"></script>
+	<script src="js/main.js"></script>
+</body>
+</html>

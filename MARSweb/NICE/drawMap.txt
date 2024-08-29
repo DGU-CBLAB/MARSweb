@@ -1,0 +1,2 @@
+./eQTLmap4 -g ./test/genePos.txt -s ./test/snpPos.txt -p ./test/p_ttest.txt -m 2.5 -M 5 -o eQTL_ttest.png -z 2
+./eQTLmap4 -g ./test/genePos.txt -s ./test/snpPos.txt -p ./test/NICE.txt -m 2.5 -M 5 -o eQTL_NICE.png -z 2

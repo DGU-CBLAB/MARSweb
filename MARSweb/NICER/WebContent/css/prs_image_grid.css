@@ -1,0 +1,11 @@
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 10px;
+    width: 100%; /* Adjust as needed */
+    margin: auto; /* Center the grid */
+}
+.image-grid img {
+    width: 100%;
+    height: auto;
+}
