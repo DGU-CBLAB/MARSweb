@@ -5,7 +5,7 @@
 
 bool isNumber(const std::string& str);
 
-int main(int argc, char* argv[]) { // interface Á¦ÀÛ int argc, char* argv[]
+int main(int argc, char* argv[]) { // interface ÃÂ¦Ã€Ã› int argc, char* argv[]
 
 	std::string geno_path = "none";
 	std::string stat_path = "none";
