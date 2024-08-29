@@ -98,7 +98,7 @@ Mars_cpp::Mars_cpp(std::string Geno, std::string Stat, std::string ld,int simNum
 	}
 };
 
-int Mars_cpp::nextBinary(int* data, int size) { // °æ¿ìÀÇ¼ö Ãâ·ÂÇÏ´Â ÇÔ¼öÀÎµí.
+int Mars_cpp::nextBinary(int* data, int size) { // ê²½ìš°ì˜ìˆ˜ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜ì¸ë“¯.
 	int i = 0;
 	int total_one = 0;
 	int index = size - 1;
@@ -106,7 +106,7 @@ int Mars_cpp::nextBinary(int* data, int size) { // °æ¿ìÀÇ¼ö Ãâ·ÂÇÏ´Â ÇÔ¼öÀÎµí.
 
 	while (index >= 0 && data[index] == 1) {
 		index = index - 1;
-		one_countinus_in_end = one_countinus_in_end + 1; //1°³¼ö È®ÀÎ.
+		one_countinus_in_end = one_countinus_in_end + 1; //1ê°œìˆ˜ í™•ì¸.
 	}
 	if (index >= 0) {
 		while (index >= 0 && data[index] == 0) {
@@ -253,7 +253,7 @@ double Mars_cpp::fracdmvnorm(Eigen::MatrixXd Z, Eigen::MatrixXd mean, Eigen::Mat
 	double v1 = res1(0, 0) / 2 - res2(0, 0) / 2 - baseValue / 2;
 	return(exp(v1) / sqrt(newR.determinant()) * sqrt(R.determinant()));
 }
-double Mars_cpp::dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat) //ÇÑ°³¾¿ °è»ê´ï.
+double Mars_cpp::dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat) //í•œê°œì”© ê³„ì‚°ëŒ.
 {
 	// avoid magic numbers in your code. Compilers will be able to compute this at compile time:
 	const double logSqrt2Pi = 0.5 * std::log(2 * M_PI);
@@ -266,7 +266,7 @@ double Mars_cpp::dmvnorm_(const Eigen::VectorXd& x, const Eigen::VectorXd& meanV
 	double quadform = (L.solve(x - meanVec)).squaredNorm();
 	return std::exp(-x.rows() * logSqrt2Pi - 0.5 * quadform) / L.determinant();
 }
-double Mars_cpp::dmvnorm_2(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat) //ÇÑ°³¾¿ °è»ê´ï.
+double Mars_cpp::dmvnorm_2(const Eigen::VectorXd& x, const Eigen::VectorXd& meanVec, const Eigen::MatrixXd& covMat) //í•œê°œì”© ê³„ì‚°ëŒ.
 {
 	double n = x.rows();
 	double sqrtsqrt2 = std::sqrt(std::sqrt(2));
@@ -309,7 +309,7 @@ Eigen::MatrixXd Mars_cpp::rmvnorm_(int simulation_Number, Eigen::VectorXd mean, 
 Eigen::MatrixXd Mars_cpp::cal_cor(Eigen::MatrixXd& mat) {
 	int mat_cols = mat.cols();
 	int mat_rows = mat.rows();
-	Eigen::MatrixXd centered = mat.colwise() - mat.rowwise().mean(); //cov¶û Æ²¸² ÁÖÀÇÇÒ°Í!. ³Ö´Â ¼ø¼­°¡ ´Ù¸§.
+	Eigen::MatrixXd centered = mat.colwise() - mat.rowwise().mean(); //covë‘ í‹€ë¦¼ ì£¼ì˜í• ê²ƒ!. ë„£ëŠ” ìˆœì„œê°€ ë‹¤ë¦„.
 	Eigen::MatrixXd ret(mat_rows, mat_rows);
 	for (int i = 0; i < mat_rows; i++) {
 		for (int j = 0; j < mat_rows; j++) {
@@ -735,4 +735,4 @@ std::vector<std::pair<double, std::vector<std::pair<int, double>>>> Mars_cpp::im
 	return WBS;
 }
 
-// ¤»_¤» 
+// ã…‹_ã…‹ 
