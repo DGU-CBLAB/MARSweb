@@ -3,21 +3,23 @@
 c++ version of MARS(made by Jong Wha J. Joo)<br> 
 Original MARS paper -> https://www.biorxiv.org/content/10.1101/498360v1
 
-# Setup using Docker image
-1. cat Docker image<br>
-MarsNet.tar file should be created after these commands
-```
-cd docker/
-cat MarsNet.tar_* >> MarsNet.tar
-```
-2. Install Docker
+## Docker Image
 
-3. Run MarsNet using Docker
-```
-docker load -i MarsNet.tar
-docker run -v "data_path":/data --rm marsnet /MarsNet/MarsNet -geno /data/"yourdata_geno" -stat /data/"yourdata_stat" -sim 10000 -mode 1
-```
+The Docker image for MARSweb can be found on Docker Hub at [taegun89/marsweb](https://hub.docker.com/r/taegun89/marsweb).
 
+## Getting Started
+
+### Prerequisites
+
+- Docker (version 19.03 or later)
+
+### Pull the Docker Image
+
+To pull the Docker image from Docker Hub, use the following command:
+
+```bash
+docker pull yourusername/marsweb:latest
+```
 # Using G++ Compiler
 1. Unzip Eigen Library 
 ```
