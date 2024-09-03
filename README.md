@@ -3,11 +3,9 @@
 c++ version of MARS(made by Jong Wha J. Joo)<br> 
 Original MARS paper -> https://www.biorxiv.org/content/10.1101/498360v1
 
-## Docker Image
+## Using Docker 
 
 The Docker image for MARSweb can be found on Docker Hub at [taegun89/marsweb](https://hub.docker.com/r/taegun89/marsweb).
-
-## Getting Started
 
 ### Prerequisites
 
@@ -23,7 +21,7 @@ docker pull taegun89/marsweb:latest
 
 ### Running the Docker Contatiner
 ```bash
-docker run -d \
+docker run -ti \
   -e MARSweb_username=your_username \
   -e MARSweb_passwd=your_password \
   -p 8080:8080 \
@@ -37,8 +35,9 @@ To run the Docker container, execute the following command after starting the co
 ```
 /MARSweb/apache-tomcat-9.0.64/bin/startup.sh
 ```
+After running the command, you can access MARSweb locally at: http://cblab.dongguk.edu:8080/
 
-# Using G++ Compiler
+## Using G++ Compiler
 1. Unzip Eigen Library 
 ```
 cd MarsNet
