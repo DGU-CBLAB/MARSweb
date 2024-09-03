@@ -18,8 +18,26 @@ The Docker image for MARSweb can be found on Docker Hub at [taegun89/marsweb](ht
 To pull the Docker image from Docker Hub, use the following command:
 
 ```bash
-docker pull yourusername/marsweb:latest
+docker pull taegun89/marsweb:latest
 ```
+
+### Running the Docker Contatiner
+```bash
+docker run -d \
+  -e MARSweb_username=your_username \
+  -e MARSweb_passwd=your_password \
+  -p 8080:8080 \
+  -v "LDREF_path":/Data/1000genome/LDREF/LDREF
+  taegun89/marsweb:latest
+```
+
+### Start Tomcat Server
+
+To run the Docker container, execute the following command after starting the container
+```
+/MARSweb/apache-tomcat-9.0.64/bin/startup.sh
+```
+
 # Using G++ Compiler
 1. Unzip Eigen Library 
 ```
