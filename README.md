@@ -40,7 +40,7 @@ After running the command, you can access MARSweb locally at: http://cblab.dongg
 ## Using G++ Compiler
 1. Unzip Eigen Library 
 ```
-cd MarsNet
+cd MARScpp
 unzip Eigen.zip -d Eigen
 ```
 2. Install boost library 
@@ -53,9 +53,9 @@ cd boost_1_74_0
 ```
 3. Compile
 ```
-g++ -O2 -DNDEBUG -std=c++11 -I ./Eigen/ ./Mars_cpp.cpp ./Mars_main.cpp -o MarsNet -I ./boost_1_74_0 
+g++ -O2 -DNDEBUG -std=c++11 -I ./Eigen/ ./Mars_cpp.cpp ./Mars_main.cpp -o MARSweb -I ./boost_1_74_0 
 ```
 4. Run
 ``` 
-./MarsNet -geno ./exam_geno -stat ./exam_stat -sim 10000 -mode 1
+./MARSweb -geno ./exam_geno -stat ./exam_stat -sim 10000 -mode 1
 ```
