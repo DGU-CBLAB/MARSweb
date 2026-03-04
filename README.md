@@ -24,7 +24,7 @@ docker pull taegun89/marsweb:latest
 docker run -ti \
   -e MARSweb_username=your_username \
   -e MARSweb_passwd=your_password \
-  -p 8080:8080 \
+  -p 8080:80 \
   -v "LDREF_path":/Data/1000genome/LDREF/LDREF
   taegun89/marsweb:latest
 ```
